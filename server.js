@@ -21,7 +21,7 @@ var client = restify.createJsonClient({
   version: '*'
 });
 var postText = client.post('/postText',
- { 'text': 'world' }, function(err, req, res, obj) {
+ { 'text': 'azure works' }, function(err, req, res, obj) {
   if(err) console.log(err);
   console.log('%d -> %j', res.statusCode, res.headers);
   console.log('%j', obj);
