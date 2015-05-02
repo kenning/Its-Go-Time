@@ -13,6 +13,9 @@ var client = restify.createJsonClient({
 
 // https://github.com/kenning/hinternet/blob/master/routes/index.js
 
+    // "mongodb":"2.0.28",
+    // "monk":"1.0.1"
+
 function respond(req, res, next) {
   postText('asdf');
   res.send('hello ' + req.params.name);
