@@ -3,6 +3,11 @@ var client = restify.createJsonClient({
   url: 'https://hooks.slack.com/services/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',
   version: '*'
 });
+var port = process.env.PORT || 1337;
+
+var server = restify.createServer();
+
+var games = {};
 
 // var monk = require('monk');
 // var mongodb = require('mongodb');
@@ -16,13 +21,11 @@ var client = restify.createJsonClient({
     // "mongodb":"2.0.28",
     // "monk":"1.0.1"
 
-var port = process.env.PORT || 1337;
-
-var server = restify.createServer();
 
 function respond(req, res, next) {
   postText('asdf');
   res.send('hello ' + req.params.name);
+  res.send(JSON.stringify(games));
   next();
 }
 
@@ -34,9 +37,13 @@ var postText = function(text) {
     console.log('%j', obj);
   });
 }
+
 server.get('/hello/:name', respond);
 server.head('/hello/:name', respond);
-
+server.get('/fromslack/:message', respond(req, res, next) {
+  games[req.params.name] = req.params.message;
+  res.send(201, Math.random().toString(36).substr(3, 8));
+});
 server.listen(port, function() {
   console.log('%s listening at %s', server.name, server.url);
 });
