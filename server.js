@@ -40,7 +40,7 @@ var postText = function(text) {
 
 server.get('/hello/:name', respond);
 server.head('/hello/:name', respond);
-server.get('/fromslack/:message', respond(req, res, next) {
+server.get('/fromslack/:message', function(req, res, next) {
   games[req.params.name] = req.params.message;
   res.send(201, Math.random().toString(36).substr(3, 8));
 });
