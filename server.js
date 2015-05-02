@@ -24,8 +24,7 @@ var games = {};
 
 function respond(req, res, next) {
   postText('asdf');
-  res.send('hello ' + req.params.name);
-  res.send(JSON.stringify(games));
+  res.send('hello ' + req.params.name + JSON.stringify(games));
   next();
 }
 
