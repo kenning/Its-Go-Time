@@ -4,7 +4,9 @@
   "description": "go",
   "main": "server.js",
   "dependencies": {
-    "restify": "^3.0.2"
+    "restify": "^3.0.2",
+    "mongodb":"2.0.28",
+    "monk":"1.0.1"
   },
   "devDependencies": {},
   "scripts": {
