@@ -16,6 +16,10 @@ var client = restify.createJsonClient({
     // "mongodb":"2.0.28",
     // "monk":"1.0.1"
 
+var port = process.env.PORT || 1337;
+
+var server = restify.createServer();
+
 function respond(req, res, next) {
   postText('asdf');
   res.send('hello ' + req.params.name);
@@ -24,19 +28,15 @@ function respond(req, res, next) {
 
 var postText = function(text) {
     client.post('https://hooks.slack.com/services/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',
-      { 'text': 'azure really works' }, function(err, req, res, obj) {
+      { 'text': '2:22' }, function(err, req, res, obj) {
     if(err) console.log(err);
     console.log('%d -> %j', res.statusCode, res.headers);
     console.log('%j', obj);
   });
 }
-
-
-var server = restify.createServer();
 server.get('/hello/:name', respond);
 server.head('/hello/:name', respond);
 
-server.listen(8080, function() {
+server.listen(port, function() {
   console.log('%s listening at %s', server.name, server.url);
 });
-
