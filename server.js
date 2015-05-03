@@ -59,7 +59,8 @@ server.post('/', function(req, res) {
   //   var body += data;
   // }
   // request.on('end', function () {
-    res.send(201, {'text': JSON.stringify(req.body.text)});
+    var coolText = Object.keys(req.body);
+    res.send(201, {'text': JSON.stringify(coolText)});
   // }
   // var keys = Object.keys(req);
 
