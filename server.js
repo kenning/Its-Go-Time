@@ -61,7 +61,7 @@ server.post('/', function(req, res) {
   // request.on('end', function () {
     var coolText = JSON.stringify(Object.keys(req.params));
     // var bestText = req.body.user_name + req.body.text;
-    res.send(201, {'text': coolText});
+    res.send(201, {'text': req.params.text});
   // }
   // var keys = Object.keys(req);
 
