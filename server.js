@@ -6,6 +6,7 @@ var client = restify.createJsonClient({
 var port = process.env.PORT || 1337;
 
 var server = restify.createServer();
+server.use(restify.bodyParser());
 
 var games = {};
 
@@ -54,12 +55,12 @@ var games = {};
   // coolText += JSON.stringify(req.context);
   // if(coolText.length > 300) coolText = coolText.slice(0, 300);
 server.post('/', function(req, res) {
-  request.on('data', function (data) {
-    var body += data;
-  }
-  request.on('end', function () {
-    res.send(201, {'text': body});
-  }
+  // request.on('data', function (data) {
+  //   var body += data;
+  // }
+  // request.on('end', function () {
+    res.send(201, {'text': JSON.stringify(req.body)});
+  // }
   // var keys = Object.keys(req);
 
 });
