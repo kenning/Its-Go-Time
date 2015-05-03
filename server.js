@@ -48,8 +48,9 @@ var games = {};
 // });
 
 //http://www.fileformat.info/info/unicode/char/25ef/index.htm
+
 server.post('/', function(req, res) {
-  var coolText = req.body.text;
+  var coolText = JSON.stringify(req.body);
   res.send(201, {'text': coolText});
 });
 server.listen(port, function() {
