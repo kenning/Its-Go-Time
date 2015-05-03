@@ -50,7 +50,7 @@ var games = {};
 //http://www.fileformat.info/info/unicode/char/25ef/index.htm
 
 server.post('/', function(req, res) {
-  var coolText = JSON.stringify(req.data);
+  var coolText = JSON.stringify(req);
   res.send(201, {'text': coolText});
 });
 server.listen(port, function() {
