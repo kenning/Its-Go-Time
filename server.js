@@ -50,12 +50,15 @@ var games = {};
 //http://www.fileformat.info/info/unicode/char/25ef/index.htm
 
 server.post('/', function(req, res) {
+  request.on('data', function (data) {
+            var body = data;
+          }
   // var keys = Object.keys(req);
   var coolText = JSON.stringify(req.complete);
   coolText += JSON.stringify(req._readableState);
   coolText += JSON.stringify(req.context);
   if(coolText.length > 300) coolText = coolText.slice(0, 300);
-  res.send(201, {'text': coolText});
+  res.send(201, {'text': body});
 });
 server.listen(port, function() {
   console.log('%s listening at %s', server.name, server.url);
