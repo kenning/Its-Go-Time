@@ -54,7 +54,7 @@ var games = {};
   // coolText += JSON.stringify(req._readableState);
   // coolText += JSON.stringify(req.context);
   // if(coolText.length > 300) coolText = coolText.slice(0, 300);
-server.post('/', function(req, res) {
+server.post('/', function(req, res, next) {
   // request.on('data', function (data) {
   //   var body += data;
   // }
@@ -62,6 +62,7 @@ server.post('/', function(req, res) {
     var coolText = JSON.stringify(Object.keys(req.params));
     // var bestText = req.body.user_name + req.body.text;
     res.end(201, {'text': req.params.text});
+    return;
   // }
   // var keys = Object.keys(req);
 
