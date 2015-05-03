@@ -49,7 +49,8 @@ var games = {};
 
 //http://www.fileformat.info/info/unicode/char/25ef/index.htm
 server.post('/', function(req, res) {
-  res.send(201, {'text': 'asdf'});
+  var coolText = req.body.text;
+  res.send(201, {'text': coolText});
 });
 server.listen(port, function() {
   console.log('%s listening at %s', server.name, server.url);
