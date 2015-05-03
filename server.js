@@ -31,20 +31,22 @@ var games = {};
 //   res.send('hello ' + req.params.name + JSON.stringify(games));
 //   next();  
 // });
-var lastRequest;
+//// var lastRequest;
 
-server.get('/', function(req, res, next) {
-  // games[req.params.name] = req.params.message;
-  res.send('last request = ' + lastRequest);
-  next();
-});
-server.post('/', function(req, res, next) {
-  lastRequest = JSON.stringify(req);
-  var text = (req.body) ? JSON.stringify(req.body.text) : 'error parsing request.body!';
-  res.send(201, {'text': text});
-});
-server.listen(port, function() {
-  console.log('%s listening at %s', server.name, server.url);
-});
+//// server.get('/', function(req, res, next) {
+////   res.send('last request = ' + lastRequest);
+////   next();
+//// });
+//// server.post('/', function(req, res, next) {
+////   lastRequest = JSON.stringify(req);
+////   var text = (req.body) ? JSON.stringify(req.body.text) : 'error parsing request.body!';
+////   res.send(201, {'text': text});
+//// });
+//// server.listen(port, function() {
+////   console.log('%s listening at %s', server.name, server.url);
+//// });
 
 //http://www.fileformat.info/info/unicode/char/25ef/index.htm
+server.post('/', function(req, res) {
+  res.send(201, {'text': 'asdf'});
+});
