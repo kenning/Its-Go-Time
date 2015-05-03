@@ -21,13 +21,28 @@ var games = {};
 
 // server.head('/hello/:name', respond);
 
-server.get('/fromslack/:message', function(req, res, next) {
+// server.get('/hello/:name', function(req, res, next) {
+//   client.post('https://hooks.slack.com/services/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',
+//       { 'text': '2:22' }, function(err, req, res, obj) {
+//     if(err) console.log(err);
+//     console.log('%d -> %j', res.statusCode, res.headers);
+//     console.log('%j', obj);
+//   });
+//   res.send('hello ' + req.params.name + JSON.stringify(games));
+//   next();  
+// });
+
+server.get('/', function(req, res, next) {
   // games[req.params.name] = req.params.message;
-  var text = req.body.text.replace(/\s/g, '+');
-  res.send(201, {'text': text});
+  var text = 'error parsing request.body!';
+
+  // text = req.body.text.replace(/\s/g, '+') || text;
+  text = text || 'new error';
+  res.send(text);
+  next();
 });
-server.post('/fromslack/:message', function(req, res, next) {
-  var text = req.body.text.replace(/\s/g, '+');
+server.post('/', function(req, res, next) {
+  var text = JSON.stringify(req.body) || 'error parsing request.body!';
   res.send(201, {'text': text});
 });
 server.listen(port, function() {
