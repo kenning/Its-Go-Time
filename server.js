@@ -38,8 +38,8 @@ server.get('/hello/:name', function(req, res, next) {
 // server.head('/hello/:name', respond);
 server.post('/fromslack/:message', function(req, res, next) {
   games[req.params.name] = req.params.message;
-  res.send(201, Math.random().toString(36).substr(3, 8));
-  
+  res.send(201, 'hello there!');
+
 });
 server.listen(port, function() {
   console.log('%s listening at %s', server.name, server.url);
