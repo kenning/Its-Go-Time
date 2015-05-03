@@ -21,13 +21,13 @@ var games = {};
 
 // server.head('/hello/:name', respond);
 
-// server.get('/fromslack/:message', function(req, res, next) {
-//   // games[req.params.name] = req.params.message;
-//   var text = req.body.text.replace(/\s/g, '+'),
-//   res.send(201, {'text': text});
-// });
+server.get('/fromslack/:message', function(req, res, next) {
+  // games[req.params.name] = req.params.message;
+  var text = req.body.text.replace(/\s/g, '+');
+  res.send(201, {'text': text});
+});
 server.post('/fromslack/:message', function(req, res, next) {
-  var text = req.body.text.replace(/\s/g, '+'),
+  var text = req.body.text.replace(/\s/g, '+');
   res.send(201, {'text': text});
 });
 server.listen(port, function() {
