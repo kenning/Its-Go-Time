@@ -59,9 +59,9 @@ server.post('/', function(req, res) {
   //   var body += data;
   // }
   // request.on('end', function () {
-    var coolText = Object.keys(req.body);
-    var bestText = req.body.user_name + req.body.text;
-    res.send(201, {'text': bestText});
+    var coolText = JSON.stringify(Object.keys(req.params));
+    // var bestText = req.body.user_name + req.body.text;
+    res.send(201, {'text': coolText});
   // }
   // var keys = Object.keys(req);
 
