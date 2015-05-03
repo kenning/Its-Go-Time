@@ -35,12 +35,11 @@ var lastRequest;
 
 server.get('/', function(req, res, next) {
   // games[req.params.name] = req.params.message;
-  res.send(JSON.stringify(lastRequest));
+  res.send('last request = ' + JSON.stringify(lastRequest));
   next();
 });
 server.post('/', function(req, res, next) {
-  var text = JSON.stringify(req.body.text) || 'error parsing request.body!';
-  lastRequest = req;
+  var text = (req.body) ? JSON.stringify(req.body.text) : 'error parsing request.body!';
   res.send(201, {'text': text});
 });
 server.listen(port, function() {
