@@ -21,21 +21,21 @@ var games = {};
     // "mongodb":"2.0.28",
     // "monk":"1.0.1"
 
-server.get('/hello/:name', function(req, res, next) {
-  client.post('https://hooks.slack.com/services/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',
-      { 'text': '2:22' }, function(err, req, res, obj) {
-    if(err) console.log(err);
-    console.log('%d -> %j', res.statusCode, res.headers);
-    console.log('%j', obj);
-  });
-  res.send('hello ' + req.params.name + JSON.stringify(games));
-  next();  
-});
+// server.get('/hello/:name', function(req, res, next) {
+//   client.post('https://hooks.slack.com/services/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',
+//       { 'text': '2:22' }, function(err, req, res, obj) {
+//     if(err) console.log(err);
+//     console.log('%d -> %j', res.statusCode, res.headers);
+//     console.log('%j', obj);
+//   });
+//   res.send('hello ' + req.params.name + JSON.stringify(games));
+//   next();  
+// });
 // server.head('/hello/:name', respond);
 server.post('/fromslack/:message', function(req, res, next) {
   games[req.params.name] = req.params.message;
-  res.send(201, {'text': 'hello!'});
-
+  var text = JSON.stringify(games) + '\n' + JSON.stringify(req);
+  res.send(201, {'text': text});
 });
 server.listen(port, function() {
   console.log('%s listening at %s', server.name, server.url);
