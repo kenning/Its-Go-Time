@@ -51,7 +51,9 @@ var games = {};
 
 server.post('/', function(req, res) {
   // var keys = Object.keys(req);
-  var coolText = JSON.stringify(req.readable);
+  var coolText = JSON.stringify(req.complete);
+  coolText += JSON.stringify(req._readableState);
+  coolText += JSON.stringify(req.context);
   if(coolText.length > 300) coolText = coolText.slice(0, 300);
   res.send(201, {'text': coolText});
 });
