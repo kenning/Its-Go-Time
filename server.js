@@ -16,27 +16,22 @@ var games = {};
 // var users = db.get('userlist');
 // urlList.findOne({Unused:true}, function(err, newImgListDoc){
 
-// https://github.com/kenning/hinternet/blob/master/routes/index.js
-
     // "mongodb":"2.0.28",
     // "monk":"1.0.1"
 
-// server.get('/hello/:name', function(req, res, next) {
-//   client.post('https://hooks.slack.com/services/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',
-//       { 'text': '2:22' }, function(err, req, res, obj) {
-//     if(err) console.log(err);
-//     console.log('%d -> %j', res.statusCode, res.headers);
-//     console.log('%j', obj);
-//   });
-//   res.send('hello ' + req.params.name + JSON.stringify(games));
-//   next();  
-// });
 // server.head('/hello/:name', respond);
+
+// server.get('/fromslack/:message', function(req, res, next) {
+//   // games[req.params.name] = req.params.message;
+//   var text = req.body.text.replace(/\s/g, '+'),
+//   res.send(201, {'text': text});
+// });
 server.post('/fromslack/:message', function(req, res, next) {
-  games[req.params.name] = req.params.message;
-  var text = JSON.stringify(games) + '\n' + JSON.stringify(req);
+  var text = req.body.text.replace(/\s/g, '+'),
   res.send(201, {'text': text});
 });
 server.listen(port, function() {
   console.log('%s listening at %s', server.name, server.url);
 });
+
+//http://www.fileformat.info/info/unicode/char/25ef/index.htm
