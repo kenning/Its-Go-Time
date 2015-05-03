@@ -34,10 +34,9 @@ var games = {};
 
 server.get('/', function(req, res, next) {
   // games[req.params.name] = req.params.message;
-  var text = 'error parsing request.body!';
+  var text = 'starting text';
 
-  // text = req.body.text.replace(/\s/g, '+') || text;
-  text = text || 'new error';
+  text = req.body.text.replace(/\s/g, '+') || text;
   res.send(text);
   next();
 });
