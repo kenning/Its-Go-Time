@@ -36,7 +36,7 @@ server.get('/', function(req, res, next) {
   // games[req.params.name] = req.params.message;
   var text = 'starting text';
 
-  text = req.body.text.replace(/\s/g, '+') || text;
+  text = JSON.stringify(req.body) || text;
   res.send(text);
   next();
 });
