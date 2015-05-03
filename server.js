@@ -31,17 +31,16 @@ var games = {};
 //   res.send('hello ' + req.params.name + JSON.stringify(games));
 //   next();  
 // });
+var lastRequest;
 
 server.get('/', function(req, res, next) {
   // games[req.params.name] = req.params.message;
-  var text = 'starting text';
-
-  text = JSON.stringify(req.body) || text;
-  res.send(text);
+  res.send(JSON.stringify(lastRequest));
   next();
 });
 server.post('/', function(req, res, next) {
-  var text = JSON.stringify(req.body) || 'error parsing request.body!';
+  var text = JSON.stringify(req.body.text) || 'error parsing request.body!';
+  lastRequest = req;
   res.send(201, {'text': text});
 });
 server.listen(port, function() {
