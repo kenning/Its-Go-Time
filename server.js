@@ -1,6 +1,7 @@
 var restify = require('restify');
+var incomingHookUrl = 'https://hooks.slack.com/services/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';
 var client = restify.createJsonClient({
-  url: 'https://hooks.slack.com/services/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',
+  url: incomingHookUrl,
   version: '*'
 });
 var port = process.env.PORT || 1337;
@@ -8,8 +9,15 @@ var port = process.env.PORT || 1337;
 var server = restify.createServer();
 server.use(restify.bodyParser());
 
+server.get('/get', function(req, res, next) {
+  client.post(incomingHookUrl, { 'text': 'got!' }, function(err, req, res, obj) {
+      if(err) console.log(err);
+  });
+  res.send('hi');
+});
+
 server.post('/', function(req, res, next) {
-  // if()
+  // if(req.params.user_name === 'rice-ball-bot')  
   var request = req.params.text.split(' ');
   if(request[1].length !== 1 || 
      request[2].length > 2 ||  
@@ -23,10 +31,11 @@ server.post('/', function(req, res, next) {
 
   var postAFifth = function() {
     fifth++;
-    client.post('https://hooks.slack.com/services/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',
+    client.post(incomingHookUrl,
         { 'text': fifth.toString() }, function(err, req, res, obj) {
       if(err) console.log(err);
     });
+    res.send('hi');
   }
 
   if(req[1] === 4) postAFifth();
@@ -75,7 +84,7 @@ GoFramework.prototype.printBoard = function(fifth) {
 
     //can't print the 20th row, there isn't one.
     if(i === 18 || i === 3) {
-      result += '  1    2    3    4    5    6    7    8    9    10   11   12   13   14   15   16   17   18   19';
+      result += '  1     2     3     4     5     6     7     8     9     10  11  12  13  14  15  16  17  18  19';
       break;
     }
   }
