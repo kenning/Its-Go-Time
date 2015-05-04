@@ -35,26 +35,40 @@ server.post('/', function(req, res, next) {
   if(row < 0) row += 32;
   var column = request[2] - 1;
 
+  var 
   gfw.makePlay(row, column, 1);
 
-  var postAFifth = function() {
-    fifth++;
-    client.post(incomingHookUrl, { 'text': gfw.printBoard(fifth) }, function(err, req, res, obj) {
+  var postARow = function() {
+    row++;
+    client.post(incomingHookUrl, { 'text': gfw.printBoard(row) }, function(err, req, res, obj) {
       if(err) console.log(err);
     });
   }
 
-  if(req[1] === 4) postAFifth();
+  var row = 0;
 
-  var fifth = 0;
+  setTimeout(postARow, 1100);
+  setTimeout(postARow, 2200);
+  setTimeout(postARow, 3300);
+  setTimeout(postARow, 4400);
+  setTimeout(postARow, 5500);
+  setTimeout(postARow, 6600);
+  setTimeout(postARow, 7700);
+  setTimeout(postARow, 8800);
+  setTimeout(postARow, 9900);
+  setTimeout(postARow, 11000); //10
+  setTimeout(postARow, 12200);
+  setTimeout(postARow, 13300);
+  setTimeout(postARow, 14400);
+  setTimeout(postARow, 15500);
+  setTimeout(postARow, 16600);
+  setTimeout(postARow, 17700);
+  setTimeout(postARow, 18800);
+  setTimeout(postARow, 20000);
+  setTimeout(postARow, 21100);
 
-  setTimeout(postAFifth, 1100);
-  setTimeout(postAFifth, 2200);
-  setTimeout(postAFifth, 3300);
-  setTimeout(postAFifth, 4400);
-  setTimeout(postAFifth, 5500);
-
-  res.send(201, {'text': request[3] + ' plays at ' + request[2] + '-' + request[1].toString() });
+  res.send(201, {'text':})
+  // res.send(201, {'text': request[3] + ' plays at ' + request[2] + '-' + request[1].toString() });
 });
 server.listen(port, function() {
   console.log('%s listening at %s', server.name, server.url);
@@ -78,21 +92,18 @@ GoFramework.prototype.makePlay = function(row, column, color) {
 };
 
 ///Prints a fifth of the board
-GoFramework.prototype.printBoard = function(fifth) {
+GoFramework.prototype.printBoard = function(row) {
   var result = "";
-  for(var i = fifth*4; i < (fifth*4)+4; i++) {
-    this.board[i].forEach(function(column) {
-      if(column === 0) result += ':heavy_plus_sign: ';
-      else if(column === 1) result += ':black_circle: ';
-      else if(column === 2) result += ':white_circle: ';
-    });
-    result += '\n';
+  this.board[row].forEach(function(column) {
+    if(column === 0) result += ':heavy_plus_sign: ';
+    else if(column === 1) result += ':black_circle: ';
+    else if(column === 2) result += ':white_circle: ';
+  });
+  result += '\n';
 
     //can't print the 20th row, there isn't one.
-    if(i === 18) {
-      result += '  1     2     3     4     5     6     7     8     9     10  11  12  13  14  15  16  17  18  19';
-      break;
-    }
+  if(row === 18) {
+    result += '  1       2        3        4        5        6        7        8        9        10 11 12 13 14 15 16 17 18 19';
   }
   return result;
 }
