@@ -19,12 +19,6 @@ server.post('/', function(req, res, next) {
   var column = request[2] - 1;
 
   gfw.makePlay(row, column, 1);
-  // gfw.makePlay()
-  request.splice(0, 1);
-
-  res.send(201, {'text': gfw.printBoard(0) });
-
-  var fifth = 0;
 
   var postAFifth = function() {
     fifth++;
@@ -33,6 +27,12 @@ server.post('/', function(req, res, next) {
       if(err) console.log(err);
     });
   }
+
+  if(req[1] === 4) postAFifth();
+
+  res.send(201, {'text': gfw.printBoard(0) });
+
+  var fifth = 0;
 
 
   setTimeout(postAFifth, 2200);
