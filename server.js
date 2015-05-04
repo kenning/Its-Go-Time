@@ -10,10 +10,15 @@ var server = restify.createServer();
 server.use(restify.bodyParser());
 
 server.get('/get', function(req, res, next) {
-  client.post(incomingHookUrl, { 'text': 'got!' }, function(err, req, res, obj) {
+  var getem = function() {
+    console.log('hi');
+    client.post(incomingHookUrl, { 'text': 'got!' }, function(err, req, res, obj) {
       if(err) console.log(err);
-  });
-  res.send('hi');
+      res.send('hi');
+    });
+  }
+  console.log('calledSetTimeout');
+  setTimeout(getem, 7000);
 });
 
 server.post('/', function(req, res, next) {
@@ -31,27 +36,27 @@ server.post('/', function(req, res, next) {
 
   var postAFifth = function() {
     fifth++;
-    client.post(incomingHookUrl,
-        { 'text': fifth.toString() }, function(err, req, res, obj) {
+    client.post(incomingHookUrl, { 'text': 'delay' }, function(err, req, res, obj) {
       if(err) console.log(err);
     });
-    res.send('hi');
   }
 
   if(req[1] === 4) postAFifth();
 
-  res.send(201, {'text': gfw.printBoard(0) });
-  res.send(201, {'text': gfw.printBoard(1) })
-  var fifth = 0;
-
   client.post(incomingHookUrl, { 'text': 'got!' }, function(err, req, res, obj) {
       if(err) console.log(err);
   });
+
+  var fifth = 0;
   
   setTimeout(postAFifth, 2200);
   setTimeout(postAFifth, 4400);
   setTimeout(postAFifth, 6600);
   setTimeout(postAFifth, 8800);
+
+  res.send(201, {'text': gfw.printBoard(0) });
+
+
 });
 server.listen(port, function() {
   console.log('%s listening at %s', server.name, server.url);
