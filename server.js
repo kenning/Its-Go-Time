@@ -33,12 +33,12 @@ var GoFramework = function() {
     for(var j = 0; j < 19; j++) {
       row.push(0);
     }
-    board.push(row);
+    this.board.push(row);
   }
 }
 
 GoFramework.prototype.makePlay = function(row, column, color) {
-  this.board
+  this.board;
 };
 
 var gfw = new GoFramework();
