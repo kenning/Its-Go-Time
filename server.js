@@ -44,7 +44,10 @@ server.post('/', function(req, res, next) {
   res.send(201, {'text': gfw.printBoard(1) })
   var fifth = 0;
 
-
+  client.post(incomingHookUrl, { 'text': 'got!' }, function(err, req, res, obj) {
+      if(err) console.log(err);
+  });
+  
   setTimeout(postAFifth, 2200);
   setTimeout(postAFifth, 4400);
   setTimeout(postAFifth, 6600);
