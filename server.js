@@ -35,10 +35,10 @@ server.post('/', function(req, res, next) {
   }
 
 
-  setTimeout(postAFifth, 1100);
   setTimeout(postAFifth, 2200);
-  setTimeout(postAFifth, 3300);
   setTimeout(postAFifth, 4400);
+  setTimeout(postAFifth, 6600);
+  setTimeout(postAFifth, 8800);
 });
 server.listen(port, function() {
   console.log('%s listening at %s', server.name, server.url);
@@ -74,9 +74,7 @@ GoFramework.prototype.printBoard = function(fifth) {
 
     //can't print the 20th row, there isn't one.
     if(i === 18 || i === 3) {
-      result += '```1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19```\n';
-      result += '`1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19`\n';
-      result += '1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19\n';
+      result += '  1   2   3   4   5   6   7   8   9   10  11  12  13  14  15  16  17  18  19';
       break;
     }
   }
