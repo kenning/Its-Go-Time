@@ -35,7 +35,10 @@ server.post('/', function(req, res, next) {
   if(row < 0) row += 32;
   var column = request[2] - 1;
 
-  gfw.makePlay(row, column, 1);
+  var play = 1;
+  if(request[3] === "white") play = 2;
+
+  gfw.makePlay(row, column, play);
 
   var postARow = function() {
     row++;
@@ -94,15 +97,16 @@ GoFramework.prototype.makePlay = function(row, column, color) {
 GoFramework.prototype.printBoard = function(row) {
   var result = "";
   this.board[row].forEach(function(column) {
-    if(column === 0) result += ':heavy_plus_sign: ';
-    else if(column === 1) result += ':black_circle: ';
-    else if(column === 2) result += ':white_circle: ';
+    if(column === 0) result += ':heavy_plus_sign:  ';
+    else if(column === 1) result += ':black_circle:  ';
+    else if(column === 2) result += ':white_circle:  ';
   });
+  result += row.toString();
   result += '\n';
 
     //can't print the 20th row, there isn't one.
   if(row === 18) {
-    result += '  1       2        3        4        5        6        7        8        9        10 11 12 13 14 15 16 17 18 19';
+    result += '  1       2      3      4      5      6      7      8      9      10 11 12 13 14 15 16 17 18 19';
   }
   return result;
 }
