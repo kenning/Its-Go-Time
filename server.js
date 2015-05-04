@@ -82,9 +82,9 @@ GoFramework.prototype.printBoard = function(fifth) {
   var result = "";
   for(var i = fifth*4; i < (fifth*4)+4; i++) {
     this.board[i].forEach(function(column) {
-      if(column === 0) result += ':heavy_plus_sign:';
-      else if(column === 1) result += ':black_circle:';
-      else if(column === 2) result += ':white_circle:';
+      if(column === 0) result += ':heavy_plus_sign: ';
+      else if(column === 1) result += ':black_circle: ';
+      else if(column === 2) result += ':white_circle: ';
     });
     result += '\n';
 
