@@ -61,7 +61,7 @@ server.post('/', function(req, res, next) {
   // request.on('end', function () {
     var coolText = JSON.stringify(Object.keys(req.params));
     // var bestText = req.body.user_name + req.body.text;
-    res.send(201, {'text': "```⬤○◉◌◍●◯```\nCode\n`⬤ ○◉◌◍●◯`\n`⬤ ○◉◌◍●◯`\nthree backticks\n```⬤○◉◌ ◍ ● ◯```\n```⬤○◉◌ ◍ ● ◯```\nthree backticks around the whole thing\n```⬤○◉◌ ◍ ● ◯\n⬤○◉◌ ◍ ● ◯```\n├┬┘└┐┌│┼╭╮"});
+    res.send(201, {'text': "```:black::mid::white::black:```"});
     return next();
   // }
   // var keys = Object.keys(req);
