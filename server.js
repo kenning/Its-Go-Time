@@ -16,7 +16,7 @@ server.post('/', function(req, res, next) {
     !request[2].match(/[1-9]/)) res.send(201, {'text':'I don\'t understand. Try typing in this format: "go b 15"'});
   var row = request[1].charCodeAt(0) - 97;
   if(row < 0) row += 32;
-  var column = request[2];
+  var column = request[2] - 1;
 
   gfw.makePlay(row, column, 1);
   // gfw.makePlay()
@@ -24,10 +24,21 @@ server.post('/', function(req, res, next) {
 
   res.send(201, {'text': gfw.printBoard(0) });
 
-  client.post('https://hooks.slack.com/services/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',
-      { 'text': gfw.printBoard(1) }, function(err, req, res, obj) {
-    if(err) console.log(err);
-  });
+  var fifth = 0;
+
+  var postAFifth = function() {
+    fifth++;
+    client.post('https://hooks.slack.com/services/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',
+        { 'text': fifth.toString() }, function(err, req, res, obj) {
+      if(err) console.log(err);
+    });
+  }
+
+
+  setTimeout(postAFifth, 1100);
+  setTimeout(postAFifth, 2200);
+  setTimeout(postAFifth, 3300);
+  setTimeout(postAFifth, 4400);
 });
 server.listen(port, function() {
   console.log('%s listening at %s', server.name, server.url);
@@ -62,7 +73,12 @@ GoFramework.prototype.printBoard = function(fifth) {
     result += '\n';
 
     //can't print the 20th row, there isn't one.
-    if(i === 18) break;
+    if(i === 18 || i === 3) {
+      result += '```1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19```\n';
+      result += '`1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19`\n';
+      result += '1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19\n';
+      break;
+    }
   }
   return result;
 }
