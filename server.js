@@ -18,9 +18,10 @@ server.post('/', function(req, res, next) {
   if(row < 0) row += 32;
   var column = request[2];
 
+  gfw.makePlay(row, column, 1);
   // gfw.makePlay()
   request.splice(0, 1);
-  res.send(201, {'text': JSON.stringify(request) });
+  res.send(201, {'text': gfw.printBoard() });
 });
 server.listen(port, function() {
   console.log('%s listening at %s', server.name, server.url);
@@ -38,7 +39,19 @@ var GoFramework = function() {
 }
 
 GoFramework.prototype.makePlay = function(row, column, color) {
-  this.board;
+  this.board[row][column] = color;
 };
+GoFramework.prototype.printBoard = function() {
+  var result = "";
+  this.board.forEach(function(row) {
+    row.forEach(function(column) {
+      if(column === 0) result += ':heavy_plus_sign:';
+      else if(column === 1) result += ':black_circle:';
+      else if(column === 2) result += ':white_circle:';
+    });
+    result += '\n';
+  });
+  return result;
+}
 
 var gfw = new GoFramework();
