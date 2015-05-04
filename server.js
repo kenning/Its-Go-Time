@@ -41,10 +41,10 @@ server.post('/', function(req, res, next) {
   gfw.makePlay(row, column, play);
 
   var postARow = function() {
-    row++;
     client.post(incomingHookUrl, { 'text': gfw.printBoard(row) }, function(err, req, res, obj) {
       if(err) console.log(err);
     });
+    row++;
   }
 
   var row = 0;
@@ -101,12 +101,12 @@ GoFramework.prototype.printBoard = function(row) {
     else if(column === 1) result += ':black_circle:  ';
     else if(column === 2) result += ':white_circle:  ';
   });
-  result += row.toString();
+  result += String.fromCharCode(row.toString().charCodeAt(0) + 17);
   result += '\n';
 
     //can't print the 20th row, there isn't one.
-  if(row === 18) {
-    result += '  1       2      3      4      5      6      7      8      9      10 11 12 13 14 15 16 17 18 19';
+  if(row === 18) { 
+    result += '  1        2       3       4       5       6       7       8       9      10   11   12   13   14   15   16   17   18   19';
   }
   return result;
 }
