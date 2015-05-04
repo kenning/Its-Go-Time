@@ -9,6 +9,7 @@ var server = restify.createServer();
 server.use(restify.bodyParser());
 
 server.post('/', function(req, res, next) {
+  // if()
   var request = req.params.text.split(' ');
   if(request[1].length !== 1 || 
      request[2].length > 2 ||  
@@ -31,7 +32,7 @@ server.post('/', function(req, res, next) {
   if(req[1] === 4) postAFifth();
 
   res.send(201, {'text': gfw.printBoard(0) });
-
+  res.send(201, {'text': gfw.printBoard(1) })
   var fifth = 0;
 
 
@@ -74,7 +75,7 @@ GoFramework.prototype.printBoard = function(fifth) {
 
     //can't print the 20th row, there isn't one.
     if(i === 18 || i === 3) {
-      result += '  1   2   3   4   5   6   7   8   9   10  11  12  13  14  15  16  17  18  19';
+      result += '  1    2    3    4    5    6    7    8    9    10   11   12   13   14   15   16   17   18   19';
       break;
     }
   }
