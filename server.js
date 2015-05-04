@@ -66,8 +66,8 @@ server.post('/', function(req, res, next) {
   setTimeout(postARow, 20000);
   setTimeout(postARow, 21100);
 
-  res.send(201, {'text':})
-  // res.send(201, {'text': request[3] + ' plays at ' + request[2] + '-' + request[1].toString() });
+  // res.send(201, {'text':})
+  res.send(201, {'text': request[3] + ' plays at ' + request[2] + '-' + request[1].toString() });
 });
 server.listen(port, function() {
   console.log('%s listening at %s', server.name, server.url);
