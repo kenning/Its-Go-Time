@@ -22,12 +22,15 @@ server.get('/get', function(req, res, next) {
 });
 
 server.post('/', function(req, res, next) {
-  // if(req.params.user_name === 'rice-ball-bot')  
-  var request = req.params.text.split(' ');
-  if(request[1].length !== 1 || 
-     request[2].length > 2 ||  
-    !request[1].match(/[a-sA-S]/) || 
-    !request[2].match(/[1-9]/)) res.send(201, {'text':'I don\'t understand. Try typing in this format: "go b 15"'});
+  // if(req.params.user_name === 'rice-ball-bot') 
+
+  var request = req.params.text.toLowerCase().split(' ');
+  if( request[1].length !== 1 ||  request[2].length > 2 ||  request[3].length !== 5 ||
+      !request[1].match(/[a-s]/) || !request[2].match(/[1-9]/) || !request[3].match(/[abcehikltw]/)) {
+    res.send(201, {'text':'I don\'t understand. Try typing in this format: "go b 15 black"'});
+    return;
+  }
+
   var row = request[1].charCodeAt(0) - 97;
   if(row < 0) row += 32;
   var column = request[2] - 1;
@@ -36,27 +39,22 @@ server.post('/', function(req, res, next) {
 
   var postAFifth = function() {
     fifth++;
-    client.post(incomingHookUrl, { 'text': 'delay' }, function(err, req, res, obj) {
+    client.post(incomingHookUrl, { 'text': gfw.printBoard(fifth) }, function(err, req, res, obj) {
       if(err) console.log(err);
     });
   }
 
   if(req[1] === 4) postAFifth();
 
-  client.post(incomingHookUrl, { 'text': 'got!' }, function(err, req, res, obj) {
-      if(err) console.log(err);
-  });
-
   var fifth = 0;
-  
+
+  setTimeout(postAFifth, 1100);
   setTimeout(postAFifth, 2200);
+  setTimeout(postAFifth, 3300);
   setTimeout(postAFifth, 4400);
-  setTimeout(postAFifth, 6600);
-  setTimeout(postAFifth, 8800);
+  setTimeout(postAFifth, 5500);
 
-  res.send(201, {'text': gfw.printBoard(0) });
-
-
+  res.send(201, {'text': request[3] + ' plays at ' + request[2] + '-' + request[1].toString() });
 });
 server.listen(port, function() {
   console.log('%s listening at %s', server.name, server.url);
@@ -91,7 +89,7 @@ GoFramework.prototype.printBoard = function(fifth) {
     result += '\n';
 
     //can't print the 20th row, there isn't one.
-    if(i === 18 || i === 3) {
+    if(i === 18) {
       result += '  1     2     3     4     5     6     7     8     9     10  11  12  13  14  15  16  17  18  19';
       break;
     }
