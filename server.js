@@ -21,13 +21,21 @@ server.post('/', function(req, res, next) {
   gfw.makePlay(row, column, 1);
   // gfw.makePlay()
   request.splice(0, 1);
-  res.send(201, {'text': gfw.printBoard() });
+
+  res.send(201, {'text': gfw.printBoard(0) });
+
+  client.post('https://hooks.slack.com/services/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',
+      { 'text': gfw.printBoard(1) }, function(err, req, res, obj) {
+    if(err) console.log(err);
+  });
 });
 server.listen(port, function() {
   console.log('%s listening at %s', server.name, server.url);
 });
 
 var GoFramework = function() {
+
+  //makes a blank board
   this.board = [];
   for(var i = 0; i < 19; i++) {
     var row = [];
@@ -41,16 +49,21 @@ var GoFramework = function() {
 GoFramework.prototype.makePlay = function(row, column, color) {
   this.board[row][column] = color;
 };
-GoFramework.prototype.printBoard = function() {
+
+///Prints a fifth of the board
+GoFramework.prototype.printBoard = function(fifth) {
   var result = "";
-  this.board.forEach(function(row) {
-    row.forEach(function(column) {
+  for(var i = fifth*4; i < (fifth*4)+4; i++) {
+    this.board[i].forEach(function(column) {
       if(column === 0) result += ':heavy_plus_sign:';
       else if(column === 1) result += ':black_circle:';
       else if(column === 2) result += ':white_circle:';
     });
     result += '\n';
-  });
+
+    //can't print the 20th row, there isn't one.
+    if(i === 18) break;
+  }
   return result;
 }
 
