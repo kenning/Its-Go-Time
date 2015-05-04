@@ -35,7 +35,6 @@ server.post('/', function(req, res, next) {
   if(row < 0) row += 32;
   var column = request[2] - 1;
 
-  var 
   gfw.makePlay(row, column, 1);
 
   var postARow = function() {
