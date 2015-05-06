@@ -16,8 +16,8 @@ var port = process.env.PORT || 1337;
   /////////////////////////////////////////////
 
 server.get('/', function(req, res, next) {
-  client.post(incomingHookUrl, { 'text': 'offline test' });
-  res.send('hi');
+  client.post(incomingHookUrl, { 'text': gfw.printBoard(0) });
+  res.send(gfw.printBoard(0));
 });
 
 server.post('/', function(req, res, next) {
@@ -256,5 +256,5 @@ var gfw = new GoGameModel(5);
 //Turns on server
 server.listen(port, function() {
   console.log('%s listening at %s', server.name, server.url);
-  console.log(gfw.board[0]);
+  console.log(gfw.printBoard[0]);
 });
