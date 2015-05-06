@@ -28,7 +28,7 @@ server.post('/', function(req, res, next) {
   //Command to create a new board
   if(request[1] === "new" && request[2] === "board" && parseInt(request[3]) < 22 && parseInt(request[3]) > 0) {
     gfw = new GoGameModel(parseInt(request[3]));
-      res.send(201, {'text':'Made a new board of size ' + parseInt(request[3]}).toString());
+      res.send(201, {'text':'Made a new board of size ' + parseInt(request[3])});
     return;
   }
   
