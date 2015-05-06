@@ -10,9 +10,11 @@ var port = process.env.PORT || 1337;
 
 
 
-/////////////////////////////////////////
-// Post request. Handles all netcode
-/////////////////////////////////////////
+/////////////////////////////////////////////
+// Post request. Handles all netcode       //
+// except for the board printing function. //
+/////////////////////////////////////////////
+
 server.post('/', function(req, res, next) {
 
   //Establishes request variable with the text of the message which made the move
@@ -31,7 +33,8 @@ server.post('/', function(req, res, next) {
     return;
   }
 
-  //Further sanitizes input, parses letter and stone color as ints
+  //Further sanitizes input, parses letter and stone color as ints. 
+  //Black == 1, White == 2, blank square == 0
   var row = request[1].charCodeAt(0) - 97;
   if(row < 0) row += 32;
   var column = request[2] - 1;
@@ -61,29 +64,34 @@ server.post('/', function(req, res, next) {
 
 
 
-  /////////////////////////////////////////
-  // Go Game Model. Handles all game logic
-  /////////////////////////////////////////
+  ////////////////////////////////////////////
+  // Go Game Model. Handles all game logic. //
+  ////////////////////////////////////////////
 
-var GoGameModel = function(size) {
-  this.size = size;
-  //makes a blank board
-  this.board = [];
-  for(var i = 0; i < size; i++) {
-    var row = [];
-    for(var j = 0; j < size; j++) {
-      row.push(0);
-    }
-    this.board.push(row);
-  }
-}
+        var GoGameModel = function(size) {
+          this.size = size || 19;
+          //makes a blank board
+          this.board = [];
+          for(var i = 0; i < size; i++) {
+            var row = [];
+            for(var j = 0; j < size; j++) {
+              row.push(0);
+            }
+            this.board.push(row);
+          }
+        }
 
-//Makes play on the gameboard
-GoGameModel.prototype.makePlay = function(row, column, color) {
-  this.board[row][column] = color;
-};
+        //Makes play on the gameboard
+        GoGameModel.prototype.makePlay = function(row, column, color) {
+          this.board[row][column] = color;
+        };
 
-///Prints a row of the board
+
+
+  ////////////////////////////
+  // Board printing method. //
+  ////////////////////////////
+
 GoGameModel.prototype.printBoard = function(row) {
   row = row || 19;
   var result = "";

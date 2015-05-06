@@ -1,0 +1,42 @@
+//defined outside:
+  //thisColor === the color of the group you're testing
+  //
+
+// Sees if group has open spots
+while(testQueue.length > 0) {
+  for(var i = 0; i < testQueue.length; i++) {
+    var shift = testQueue.shift();
+    console.log('testing ' + JSON.stringify(shift));
+    var currentAdjacents = this.adjacentSpots(shift);
+
+    for(var j = 0; j < currentAdjacents.length; j++) {
+      //If this group has already been visited, fully return
+      if(this.isVisited(currentAdjacents[j])) {
+        return;
+      }
+
+      //If this group has an opening, fully return
+      if(this.board[currentAdjacents[j][0]][currentAdjacents[j][1]] === 0) return;
+
+      //If this piece is the same color, add it to queue and group and mark as visited
+      if(this.board[currentAdjacents[j][0]][currentAdjacents[j][1]] === this.thisColor) {
+        this.visitedPieces[this.stringify(currentAdjacents[j])] = currentAdjacents[j];
+        testQueue.push(currentAdjacents[j]);
+        thisGroup.push(currentAdjacents[j]);
+        continue;
+      }
+
+      if(this.board[currentAdjacents[j][0]][currentAdjacents[j][1]] === enemyColor) {
+        continue;
+      }
+      debugger;
+      console.log('Big error!');
+      throw 'Big error in recursion!';
+    }
+  }
+}
+debugger;
+//No open spots found!
+for(var i = 0; i < thisGroup.length; i++) {
+  this.piecesToRemove[this.stringify(thisGroup[i])] = thisGroup[i];
+}
