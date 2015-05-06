@@ -15,6 +15,10 @@ var port = process.env.PORT || 1337;
   // except for the board printing function. //
   /////////////////////////////////////////////
 
+server.get('/', function(req, res, next) {
+  gfw.printBoard(0);
+});
+
 server.post('/', function(req, res, next) {
 
   //Establishes request variable with the text of the message which made the move
@@ -29,8 +33,10 @@ server.post('/', function(req, res, next) {
   //Sanitizes input
   if( request[1].length !== 1 ||  request[2].length > 2 ||  request[3].length !== 5 ||
       !request[1].match(/[a-s]/) || !request[2].match(/[1-9]/) || !request[3].match(/[abcehikltw]/)) {
-    res.send(201, {'text':'I don\'t understand. Try typing in this format: "go e 15 black", "go e 15 b". To create a new board type "go new board 19"'});
-    return;
+      if(request[1] === 'help') {
+      res.send(201, {'text':'I don\'t understand. Try typing in this format: "go e 15 black", "go e 15 b". To create a new board type "go new board 19"'});
+      return;
+    }
   }
 
   //Further sanitizes input, parses letter and stone color as ints. 
@@ -70,7 +76,7 @@ server.post('/', function(req, res, next) {
 
 var GoGameModel = function(size) {
   this.size = size-1 || 18;
-  this.size;
+  console.log(size);
   this.piecesToRemove = {};
   this.visitedPieces = {};
   this.thisColor = 0;
@@ -225,7 +231,6 @@ GoGameModel.prototype.checkPiece = function(rowColumn) {
   ////////////////////////////
 
 GoGameModel.prototype.printBoard = function(row) {
-  row = row || 19;
   var result = "";
   this.board[row].forEach(function(column) {
     if(column === 0) result += ':heavy_plus_sign:  ';
@@ -235,7 +240,7 @@ GoGameModel.prototype.printBoard = function(row) {
   result += "`" + String.fromCharCode('0'.charCodeAt(0) + 17 + row) + "`"; //places letters at the end of rows
   result += '\n';
 
-  if(row === 18) { 
+  if(row === this.size) { 
     result += '` 1  2  3  4  5  6  7  8  9  10 11 12 13 14 15 16 17 18 19`';
     result += 'Black: ' + this.blackPoints + " capture points"
     result += 'White: ' + this.whitePoints + " capture points";
@@ -244,9 +249,10 @@ GoGameModel.prototype.printBoard = function(row) {
 }
 
 //Creates new GoGameModel
-var gfw = new GoGameModel();
+var gfw = new GoGameModel(5);
 
 //Turns on server
 server.listen(port, function() {
   console.log('%s listening at %s', server.name, server.url);
+  console.log(gfw.board[0]);
 });
