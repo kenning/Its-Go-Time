@@ -54,14 +54,13 @@ server.post('/', function(req, res, next) {
 
   //Row posting method
   var postARow = function() {
-    client.post(incomingHookUrl, { 'text': gfw.printBoard(postingRow) }, function(err, req, res, obj) {
-      if(err) console.log(err);
-    });
+    client.post(incomingHookUrl, { 'text': gfw.printBoard(postingRow) });
     postingRow++;
   }
 
   //Posts all rows 1.1 second apart from each other
   var postingRow = 0;
+  res.send(201, {'text': request[3] + ' plays at ' + request[2] + '-' + request[1].toString() });
   for(var i = 0; i < gfw.size; i++) {
     setTimeout(postARow, 1100*(i+1));
   }
