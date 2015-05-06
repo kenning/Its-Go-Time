@@ -50,7 +50,6 @@ server.post('/', function(req, res, next) {
   if(request[3] === "white") play = 2;
 
   //Controller method. alters data in the GoGameModel.
-  res.send(201, {'text': 'about to make a play'});
   gfw.makePlay(row, column, play);
 
   //Row posting method
