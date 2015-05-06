@@ -20,6 +20,8 @@ server.get('/', function(req, res, next) {
 });
 
 server.post('/', function(req, res, next) {
+    res.send(201, {'text': 'test');
+    return;
 
   //Establishes request variable with the text of the message which made the move
   var request = req.params.text.toLowerCase().split(' ');
