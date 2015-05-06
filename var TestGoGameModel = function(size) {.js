@@ -1,9 +1,11 @@
-var TestGoGameModel = function(size) {
+var GoGameModel = function(size) {
   this.size = size-1 || 18;
   this.size;
   this.piecesToRemove = {};
   this.visitedPieces = {};
   this.thisColor = 0;
+  this.blackPoints = 0;
+  this.whitePoints = 0;
   //makes a blank board
   this.board = [];
   for(var i = 0; i < size; i++) {
@@ -16,19 +18,21 @@ var TestGoGameModel = function(size) {
 } 
 
 //Adds a piece to the game board and checks if it creates a capture
-TestGoGameModel.prototype.addPiece = function(row, column, color) {
+GoGameModel.prototype.addPiece = function(row, column, color) {
   if(row === undefined || column === undefined || color === undefined) return null;
   if(this.board[row][column] === 1 || this.board[row][column] === 2) return null;
   if(color === 0) return null;
 
   //Marks all adjacent pieces 
   var originAdjacent = [[row, column]];
-  originAdjacent.push(this.adjacentSpots([row, column]));
+  var array = (this.adjacentSpots([row, column]));
+  array.forEach(function(item) { originAdjacent.push(item); });
 
   this.board[row][column] = color;
 
   for(var i = 0; i < originAdjacent.length; i++) {
     //sets color of this group
+    //debugger;
     this.thisColor = this.board[originAdjacent[i][0]][originAdjacent[i][1]];
     //ABOUT TO STEP INTO HELL
     if(this.thisColor>0) {
@@ -36,27 +40,27 @@ TestGoGameModel.prototype.addPiece = function(row, column, color) {
     }
   }
 
-  debugger;
+  //debugger;
 
   //Counts points that black and white players gain
-  var blackPoints = 0;
-  var whitePoints = 0;
   
   for(key in this.piecesToRemove) {
+    //debugger;
     debugger;
     //Parses row and column
-    var rowColumn = this.piecesToRemove[key].split('-');
-    rowColumn[0] = parseInt(rowColumn[0]);
-    rowColumn[1] = parseInt(rowColumn[1]);
-    console.log('removing at ' + JSON.stringify(rowColumn));
+    var toRemove = this.piecesToRemove[key];
+    console.log('removing at ' + JSON.stringify(toRemove));
 
     //Checks color and awards points
-    (this.board[rowColumn[0]][rowColumn[1]] === 1) ? whitePoints++ : blackPoints++;
+    (this.board[toRemove[0]][toRemove[1]] === 1) ? this.whitePoints++ : this.blackPoints++;
     
     //Removes piece
-    this.board[rowColumn[0]][rowColumn[1]] = 0;
-    debugger;
+    this.board[toRemove[0]][toRemove[1]] = 0;
+    //debugger;
   }
+
+  //debugger;
+  //RESET EVERYTHING! CHECK IF IT EVEN WORKS
 
   //Resets piecesToRemove and visitedPieces
   this.piecesToRemove = {};
@@ -66,7 +70,7 @@ TestGoGameModel.prototype.addPiece = function(row, column, color) {
 } 
 
 //returns adjacentSpots tuples
-TestGoGameModel.prototype.adjacentSpots = function(rowColumn) {
+GoGameModel.prototype.adjacentSpots = function(rowColumn) {
   var result =  [[rowColumn[0], rowColumn[1]-1],
            [rowColumn[0], rowColumn[1]+1],
            [rowColumn[0]+1, rowColumn[1]],
@@ -83,18 +87,20 @@ TestGoGameModel.prototype.adjacentSpots = function(rowColumn) {
 }
 
 //Returns hashkey for piecesToRemove object
-TestGoGameModel.prototype.stringify = function(rowColumn) {
+GoGameModel.prototype.stringify = function(rowColumn) {
   return rowColumn[0].toString() + '-' + rowColumn[1].toString();
 }
 
-TestGoGameModel.prototype.isVisited = function(rowColumn) {
+GoGameModel.prototype.isVisited = function(rowColumn) {
   return this.visitedPieces[this.stringify(rowColumn)] !== undefined;
 }
 
 //Recursive function which looks for captures
 //Overall function: finds group of same-colored pieces, 
   //marks them as visited, and captures them if necessary
-TestGoGameModel.prototype.checkPiece = function(rowColumn) {
+GoGameModel.prototype.checkPiece = function(rowColumn) {
+  //YOU HAVE NOW ENTERED HELL
+  //debugger;
   //Prevents redundant searches
   if(this.isVisited(rowColumn)) return;
 
@@ -104,7 +110,7 @@ TestGoGameModel.prototype.checkPiece = function(rowColumn) {
   var testQueue = [rowColumn];
 
   //Holds all pieces in the current group
-  var thisGroup = [];
+  var thisGroup = [rowColumn];
 
   //Bool flips on if the group has an empty neighbor
   var isAlive = false;
@@ -137,12 +143,12 @@ TestGoGameModel.prototype.checkPiece = function(rowColumn) {
       if(this.board[currentAdjacents[j][0]][currentAdjacents[j][1]] === enemyColor) {
         continue;
       }
-      debugger;
+      //debugger;
       console.log('Big error!');
       throw 'Big error in recursion!';
     }
   }
-  debugger;
+  //debugger;
 
   if(!isAlive) {
     for(var i = 0; i < thisGroup.length; i++) {
@@ -151,11 +157,11 @@ TestGoGameModel.prototype.checkPiece = function(rowColumn) {
   }
 }
 
-var test = new TestGoGameModel(5);
+var test = new GoGameModel(5);
 
 
 
-TestGoGameModel.prototype.testPrint = function() {
+GoGameModel.prototype.testPrint = function() {
   var print = "";
   for(var i = 0; i < this.board.length; i++) {
     for(var j = 0; j < this.board.length; j++) {
