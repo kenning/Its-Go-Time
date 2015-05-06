@@ -28,6 +28,7 @@ server.post('/', function(req, res, next) {
   //Command to create a new board
   if(request[1] === "new" && request[2] === "board" && parseInt(request[3]) < 22 && parseInt(request[3]) > 0) {
     gfw = new GoGameModel(parseInt(request[3]));
+      res.send(201, {'text':'Made a new board of size ' + parseInt(request[3]}).toString());
     return;
   }
   
@@ -35,9 +36,9 @@ server.post('/', function(req, res, next) {
   if( request[1].length !== 1 ||  request[2].length > 2 ||  request[3].length !== 5 ||
       !request[1].match(/[a-s]/) || !request[2].match(/[1-9]/) || !request[3].match(/[abcehikltw]/)) {
       if(request[1] === 'help') {
-      res.send(201, {'text':'I don\'t understand. Try typing in this format: "go e 15 black", "go e 15 b". To create a new board type "go new board 19"'});
-      return;
+      res.send(201, {'text':'I can make a Go board for you. To create a new board type "go new board 19." Make plays by typing in this format: "go e 15 black", "go e 15 b".'});
     }
+      return;
   }
 
   //Further sanitizes input, parses letter and stone color as ints. 
@@ -49,6 +50,7 @@ server.post('/', function(req, res, next) {
   if(request[3] === "white") play = 2;
 
   //Controller method. alters data in the GoGameModel.
+  res.send(201, {'text': 'about to make a play'});
   gfw.makePlay(row, column, play);
 
   //Row posting method
