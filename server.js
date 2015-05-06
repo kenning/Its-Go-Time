@@ -16,12 +16,16 @@ var port = process.env.PORT || 1337;
   /////////////////////////////////////////////
 
 server.get('/', function(req, res, next) {
-  gfw.printBoard(0);
+  client.post(incomingHookUrl, { 'text': 'offline test' });
+  res.send('hi');
 });
 
 server.post('/', function(req, res, next) {
-    res.send(201, {'text': 'test');
+    res.send(201, {'text': 'test'});
     return;
+});
+
+server.post('na', function(req, res, next) {
 
   //Establishes request variable with the text of the message which made the move
   var request = req.params.text.toLowerCase().split(' ');
