@@ -17,6 +17,13 @@ var port = process.env.PORT || 1337;
 
 server.get('/', function(req, res, next) {
   client.post(incomingHookUrl, { 'text': gfw.printBoard(0) });
+  var postingRow = 0;
+  var postARow = function() {
+    client.post(incomingHookUrl, { 'text': gfw.printBoard(postingRow) });
+    postingRow++;
+  }
+  setTimeout(postARow, 1100);
+  setTimeout(postARow, 2200);
   res.send(gfw.printBoard(0));
 });
 
@@ -53,14 +60,14 @@ server.post('/', function(req, res, next) {
   gfw.makePlay(row, column, play);
 
   //Row posting method
-  var postARow = function() {
+  var postingRow = 0;
+    var postARow = function() {
     client.post(incomingHookUrl, { 'text': gfw.printBoard(postingRow) });
     postingRow++;
   }
 
   //Posts all rows 1.1 second apart from each other
-  var postingRow = 0;
-  res.send(201, {'text': request[3] + ' plays at ' + request[2] + '-' + request[1].toString() });
+
   for(var i = 0; i < gfw.size; i++) {
     setTimeout(postARow, 1100*(i+1));
   }
@@ -249,10 +256,10 @@ GoGameModel.prototype.printBoard = function(row) {
 }
 
 //Creates new GoGameModel
+var gfw = new GoGameModel(5);
 
 //Turns on server
 server.listen(port, function() {
-  var gfw = new GoGameModel(5);
   console.log('%s listening at %s', server.name, server.url);
   console.log(gfw.printBoard(0));
 });
