@@ -232,6 +232,7 @@ GoGameModel.prototype.checkPiece = function(rowColumn) {
   ////////////////////////////
 
 GoGameModel.prototype.printBoard = function(row) {
+  if(row === undefined) return 'Row not defined!';
   var result = "";
   this.board[row].forEach(function(column) {
     if(column === 0) result += ':heavy_plus_sign:  ';
@@ -246,14 +247,14 @@ GoGameModel.prototype.printBoard = function(row) {
     result += 'Black: ' + this.blackPoints + " capture points"
     result += 'White: ' + this.whitePoints + " capture points";
   }
-  return result;
+  return JSON.stringify(result);
 }
 
 //Creates new GoGameModel
-var gfw = new GoGameModel(5);
 
 //Turns on server
 server.listen(port, function() {
+  var gfw = new GoGameModel(5);
   console.log('%s listening at %s', server.name, server.url);
-  console.log(gfw.printBoard[0]);
+  console.log(gfw.printBoard(0));
 });
