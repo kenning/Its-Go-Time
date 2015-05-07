@@ -233,6 +233,9 @@ GoGameModel.prototype.checkPiece = function(rowColumn) {
 
 GoGameModel.prototype.printBoard = function(row) {
   if(row === undefined) return 'Row not defined!';
+
+  return 'asdf';
+
   var result = "";
   this.board[row].forEach(function(column) {
     if(column === 0) result += ':heavy_plus_sign:  ';
@@ -240,7 +243,6 @@ GoGameModel.prototype.printBoard = function(row) {
     else if(column === 2) result += ':white_circle:  ';
   });
   result += "`" + String.fromCharCode('0'.charCodeAt(0) + 17 + row) + "`"; //places letters at the end of rows
-  result += '\n';
 
   if(row === this.size) { 
     result += '` 1  2  3  4  5  6  7  8  9  10 11 12 13 14 15 16 17 18 19`';
