@@ -57,9 +57,7 @@ server.post('/', function(req, res, next) {
   if(request[3] === "white" || request[3] === "w") play = 2;
 
   //Controller method. alters data in the GoGameModel.
-  res.send(201, {'text': request[3] + ' plays at ' + request[2] + '-' + request[1].toString() });
-  gfw.makePlay(row, column, play);
-  res.send(201, {'text': request[3] + ' plays at ' + request[2] + '-' + request[1].toString() });
+  gfw.addPiece(row, column, play);
 
   //Row posting method
   var postingRow = 0;
