@@ -58,6 +58,7 @@ server.post('/', function(req, res, next) {
 
   //Controller method. alters data in the GoGameModel.
   gfw.makePlay(row, column, play);
+  res.send(201, {'text': request[3] + ' plays at ' + request[2] + '-' + request[1].toString() });
 
   //Row posting method
   var postingRow = 0;
