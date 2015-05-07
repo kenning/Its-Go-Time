@@ -247,10 +247,10 @@ GoGameModel.prototype.printBoard = function(row) {
   });
   result += "`" + String.fromCharCode('0'.charCodeAt(0) + 17 + row) + "`"; //places letters at the end of rows
 
-  if(row === this.size-1) { 
-    result += '` 1  2  3  4  5  6  7  8  9  10 11 12 13 14 15 16 17 18 19`';
-    result += 'Black: ' + this.blackPoints + " capture points"
-    result += 'White: ' + this.whitePoints + " capture points";
+  if(row === this.size) { 
+    result += '\n` 1  2  3  4  5  6  7  8  9  10 11 12 13 14 15 16 17 18 19`';
+    result += '\nBlack: ' + this.blackPoints + " capture points"
+    result += '\nWhite: ' + this.whitePoints + " capture points";
   }
   return JSON.stringify(result);
 }
@@ -261,6 +261,5 @@ var gfw = new GoGameModel(5);
 //Turns on server
 server.listen(port, function() {
   console.log('%s listening at %s', server.name, server.url);
-  gfw.addPiece(0,0,1);
   console.log(gfw.printBoard(0));
 });
