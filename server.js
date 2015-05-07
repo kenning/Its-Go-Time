@@ -33,7 +33,7 @@ server.post('/', function(req, res, next) {
   }
   
   //Sanitizes input
-  if( request[1].length !== 1 ||  request[2].length > 2 ||  request[3].length !== 5 ||
+  if( request[1].length !== 1 ||  request[2].length > 2 ||  (request[3].length !== 5 && request[3].length !== 1) ||
       !request[1].match(/[a-s]/) || !request[2].match(/[1-9]/) || !request[3].match(/[abcehikltw]/)) {
       if(request[1] === 'help') {
       res.send(201, {'text':'I can make a Go board for you. To create a new board type "go new board 19." Make plays by typing in this format: "go e 15 black", "go e 15 b".'});
@@ -47,7 +47,7 @@ server.post('/', function(req, res, next) {
   if(row < 0) row += 32;
   var column = request[2] - 1;
   var play = 1;
-  if(request[3] === "white") play = 2;
+  if(request[3] === "white" || request[3] === "w") play = 2;
 
   //Controller method. alters data in the GoGameModel.
   gfw.makePlay(row, column, play);
@@ -137,7 +137,6 @@ GoGameModel.prototype.addPiece = function(row, column, color) {
   this.piecesToRemove = {};
   this.visitedPieces = {};
   this.thisColor = 0;
-  this.testPrint();
 } 
 
 //Returns adjacentSpots tuples
@@ -153,7 +152,6 @@ GoGameModel.prototype.adjacentSpots = function(rowColumn) {
       result.splice(i, 1);
     }
   }
-  console.log(result);
   return result;
 }
 
@@ -233,8 +231,6 @@ GoGameModel.prototype.checkPiece = function(rowColumn) {
 
 GoGameModel.prototype.printBoard = function(row) {
   if(row === undefined) return 'Row not defined!';
-
-  return 'asdf';
 
   var result = "";
   this.board[row].forEach(function(column) {
