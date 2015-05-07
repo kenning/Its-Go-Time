@@ -15,19 +15,11 @@ var port = process.env.PORT || 1337;
   // except for the board printing function. //
   /////////////////////////////////////////////
 
-server.get('/', function(req, res, next) {
-  client.post(incomingHookUrl, { 'text': gfw.printBoard(0) });
-  var postingRow = 0;
-  var postARow = function() {
-    client.post(incomingHookUrl, { 'text': gfw.printBoard(postingRow) });
-    postingRow++;
-  }
-  setTimeout(postARow, 1100);
-  setTimeout(postARow, 2200);
-  res.send(gfw.printBoard(0));
-});
+var printing = false;
 
 server.post('/', function(req, res, next) {
+  //prevents new input from being added before the board has finished printing
+  if(printing) return;
 
   //Establishes request variable with the text of the message which made the move
   var request = req.params.text.toLowerCase().split(' ');
@@ -43,9 +35,16 @@ server.post('/', function(req, res, next) {
   if( request[1].length !== 1 ||  request[2].length > 2 ||  (request[3].length !== 5 && request[3].length !== 1) ||
       !request[1].match(/[a-s]/) || !request[2].match(/[1-9]/) || !request[3].match(/[abcehikltw]/)) {
       if(request[1] === 'help') {
-      res.send(201, {'text':'I can make a Go board for you. To create a new board type "go new board 19." Make plays by typing in this format: "go e 15 black", "go e 15 b".'});
+      res.send(201, {'text':'I can make a Go board for you and play your stones on it.'+
+        '\nTo create a new board type "go new board 19."' +
+        '\nMake plays by typing in this format: "go e 15 black", or "go e 15 b". '+
+        '\nI cannot count your points at the end of the game for you yet.'+
+        '\nI will not enforce the コウ rule (you cannot make the same move twice).'});
     }
-      return;
+    return;
+  }
+  if(request === ["go","fuck","yourself"] || request === ["go","suck","a","dick"]) {
+    res.send(201, {'text': "Right back at you." });
   }
 
   //Further sanitizes input, parses letter and stone color as ints. 
@@ -55,6 +54,13 @@ server.post('/', function(req, res, next) {
   var column = request[2] - 1;
   var play = 1;
   if(request[3] === "white" || request[3] === "w") play = 2;
+
+  //Handles turn-taking logic
+  if(this.lastMove === play) {
+    res.send(201, {'text':'It\'s not '+request[3]+'\'s turn to play.'});
+    return;
+  }
+  this.lastMove = play;
 
   //Controller method. alters data in the GoGameModel.
   gfw.addPiece(row, column, play);
@@ -67,11 +73,15 @@ server.post('/', function(req, res, next) {
   }
 
   //Posts all rows 1.1 second apart from each other
-
   for(var i = 0; i < gfw.size+1; i++) {
     setTimeout(postARow, 1100*(i+1));
   }
 
+  //Avoids new plays being made during printing
+  var finishPrinting = function() {printing = false;}
+  setTimeout(finishPrinting, 1100*(gfw.size+3));
+
+  printing = true;
   //Sends message confirming move
   res.send(201, {'text': request[3] + ' plays at ' + request[2] + '-' + request[1].toString() });
 });
@@ -90,6 +100,7 @@ var GoGameModel = function(size) {
   this.thisColor = 0;
   this.blackPoints = 0;
   this.whitePoints = 0;
+  this.lastMove = 2;
   //makes a blank board
   this.board = [];
   for(var i = 0; i < size; i++) {
@@ -114,34 +125,54 @@ GoGameModel.prototype.addPiece = function(row, column, color) {
 
   this.board[row][column] = color;
 
+  //Array of colors of each adjacent piece
+  var adjColorArray = [];
   for(var i = 0; i < originAdjacent.length; i++) {
-    //sets color of this group
-    
-    this.thisColor = this.board[originAdjacent[i][0]][originAdjacent[i][1]];
-    if(this.thisColor>0) {
+    //sets color of this piece's group
+    adjColorArray = this.board[originAdjacent[i][0]][originAdjacent[i][1]];
+  }
+
+  //Checks all enemy pieces
+  for(var i = 0; i < originAdjacent.length; i++) {
+    if((adjColorArray[i] === 1 && color === 2) || adjColorArray[i] === 2 && color === 1) {
+      this.thisColor = adjColorArray[i];
       this.checkPiece(originAdjacent[i]);
     }
   }
 
-  
+  //Remove dead enemy pieces
+  var removeDeadPieces = function() {
+    for(key in this.piecesToRemove) {
 
-  //Counts points that black and white players gain
-  
-  for(key in this.piecesToRemove) {
+      //Parses row and column
+      var toRemove = this.piecesToRemove[key];
+      console.log('removing at ' + JSON.stringify(toRemove));
 
-    //Parses row and column
-    var toRemove = this.piecesToRemove[key];
-    console.log('removing at ' + JSON.stringify(toRemove));
-
-    //Checks color and awards points
-    (this.board[toRemove[0]][toRemove[1]] === 1) ? this.whitePoints++ : this.blackPoints++;
+      //Checks color and awards points
+      (this.board[toRemove[0]][toRemove[1]] === 1) ? this.whitePoints++ : this.blackPoints++;
+      
+      //Removes piece
+      this.board[toRemove[0]][toRemove[1]] = 0;
+    }
     
-    //Removes piece
-    this.board[toRemove[0]][toRemove[1]] = 0;
+    //Resets piecesToRemove and visitedPieces
+    this.piecesToRemove = {};
   }
-  
-  //Resets piecesToRemove and visitedPieces
-  this.piecesToRemove = {};
+  removeDeadPieces();
+
+  //Checks friendly pieces
+  for(var i = 0; i < originAdjacent.length; i++) {
+    if(adjColorArray[i] === color) {
+      this.thisColor = adjColorArray[i];
+      this.checkPiece(originAdjacent[i]);
+    }
+  }  
+
+  //Remove friendly dead pieces
+  removeDeadPieces();
+
+  //Counts points that black and white players gain  
+
   this.visitedPieces = {};
   this.thisColor = 0;
 } 
@@ -248,7 +279,7 @@ GoGameModel.prototype.printBoard = function(row) {
   result += "`" + String.fromCharCode('0'.charCodeAt(0) + 17 + row) + "`"; //places letters at the end of rows
 
   if(row === this.size) { 
-    result += ' \n` 1  2  3  4  5  6  7  8  9  10 11 12 13 14 15 16 17 18 19`';
+    // result += ' \n` 1  2  3  4  5  6  7  8  9  10 11 12 13 14 15 16 17 18 19`';
     result += '\nBlack: ' + this.blackPoints + " capture points"
     result += '\nWhite: ' + this.whitePoints + " capture points";
   }
@@ -256,7 +287,7 @@ GoGameModel.prototype.printBoard = function(row) {
 }
 
 //Creates new GoGameModel
-var gfw = new GoGameModel(5);
+var gfw = new GoGameModel(19);
 
 //Turns on server
 server.listen(port, function() {
