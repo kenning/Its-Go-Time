@@ -248,11 +248,11 @@ GoGameModel.prototype.printBoard = function(row) {
   result += "`" + String.fromCharCode('0'.charCodeAt(0) + 17 + row) + "`"; //places letters at the end of rows
 
   if(row === this.size) { 
-    result += '\n` 1  2  3  4  5  6  7  8  9  10 11 12 13 14 15 16 17 18 19`';
+    result += ' \n` 1  2  3  4  5  6  7  8  9  10 11 12 13 14 15 16 17 18 19`';
     result += '\nBlack: ' + this.blackPoints + " capture points"
     result += '\nWhite: ' + this.whitePoints + " capture points";
   }
-  return JSON.stringify(result);
+  return result;
 }
 
 //Creates new GoGameModel
