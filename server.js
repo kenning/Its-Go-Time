@@ -55,11 +55,18 @@ server.post('/', function(req, res, next) {
   var play = 1;
   if(request[3] === "white" || request[3] === "w") play = 2;
 
-  //Handles turn-taking logic
+  //Prevent players from making the same move twice in a row
+  if(([column, row] === lastBlackMove && play === 1 )||([column, row] === lastWhiteMove && play === 2)) {
+    res.send(201, {'text':'It is against the rule of Kou (コウ) for a player to play the same move two turns in a row.'}); 
+  (play === 1) ? lastBlackMove = [column, row] : lastWhiteMove = [column, row];
+
+  //Prevents players from playing out of turn
   if(this.lastMove === play) {
     res.send(201, {'text':'It\'s not '+request[3]+'\'s turn to play.'});
     return;
   }
+
+  //The move succeeded
   this.lastMove = play;
 
   //Controller method. alters data in the GoGameModel.
@@ -91,7 +98,13 @@ server.post('/', function(req, res, next) {
 
 
 
+//TODO
+//implement kou rule
+//implement passing
+//count points when both players pass and reset the board
 
+//mongo
+//make it take an incoming hook url??
 
 
 
@@ -112,6 +125,8 @@ var GoGameModel = function(size) {
   this.blackPoints = 0;
   this.whitePoints = 0;
   this.lastMove = 2;
+  this.lastBlackMove = [null, null];
+  this.lastWhiteMove = [null, null];
   //makes a blank board
   this.board = [];
   for(var i = 0; i < size; i++) {
@@ -307,7 +322,33 @@ GoGameModel.prototype.testPrint = function() {
   }
 }
 
+//Counts points for each color at the end of the game
+GoGameModel.prototype.countPoints = function() {
+  var emptySquares = {};
 
+  for(var i = 0; i < this.size+1; i++) {
+    for(var j = 0; j < this.size+1; j++) {
+      if(this.board[i][j] === 0) {
+        var stringified = this.stringify([i, j]);
+        emptySquares[stringified] = stringified;
+      }
+    }
+  }
+
+  for(key in emptySquares) {
+    if(emptySquares[key] === undefined || emptySquares[key] === null) continue;
+
+
+
+    emptySquares[key] = null;
+  }
+}
+
+//Helper function for countPoints()
+GoGameModel.prototype.findEmptySquareGroup = function(row, column) {
+
+
+}
 
 
 
