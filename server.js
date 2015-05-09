@@ -88,6 +88,17 @@ server.post('/', function(req, res, next) {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
   ////////////////////////////////////////////
   // Go Game Model. Handles all game logic. //
   ////////////////////////////////////////////
@@ -97,7 +108,7 @@ var GoGameModel = function(size) {
   console.log(size);
   this.piecesToRemove = {};
   this.visitedPieces = {};
-  this.thisColor = 0;
+  this.checkColor = 0;
   this.blackPoints = 0;
   this.whitePoints = 0;
   this.lastMove = 2;
@@ -126,39 +137,21 @@ GoGameModel.prototype.addPiece = function(row, column, color) {
   this.board[row][column] = color;
 
   //Array of colors of each adjacent piece
-  var adjColorArray = [];
+  var adjColorArray = [0,0,0,0,0];
   for(var i = 0; i < originAdjacent.length; i++) {
     //sets color of this piece's group
-    adjColorArray = this.board[originAdjacent[i][0]][originAdjacent[i][1]];
+    adjColorArray[i] = this.board[originAdjacent[i][0]][originAdjacent[i][1]];
   }
 
   //Checks all enemy pieces
   for(var i = 0; i < originAdjacent.length; i++) {
     if((adjColorArray[i] === 1 && color === 2) || adjColorArray[i] === 2 && color === 1) {
-      this.thisColor = adjColorArray[i];
+      this.checkColor = adjColorArray[i];
       this.checkPiece(originAdjacent[i]);
     }
   }
 
-  //Remove dead enemy pieces
-  var removeDeadPieces = function() {
-    for(key in this.piecesToRemove) {
-
-      //Parses row and column
-      var toRemove = this.piecesToRemove[key];
-      console.log('removing at ' + JSON.stringify(toRemove));
-
-      //Checks color and awards points
-      (this.board[toRemove[0]][toRemove[1]] === 1) ? this.whitePoints++ : this.blackPoints++;
-      
-      //Removes piece
-      this.board[toRemove[0]][toRemove[1]] = 0;
-    }
-    
-    //Resets piecesToRemove and visitedPieces
-    this.piecesToRemove = {};
-  }
-  removeDeadPieces();
+  this.removeDeadPieces();
 
   //Checks friendly pieces
   for(var i = 0; i < originAdjacent.length; i++) {
@@ -169,13 +162,31 @@ GoGameModel.prototype.addPiece = function(row, column, color) {
   }  
 
   //Remove friendly dead pieces
-  removeDeadPieces();
+  this.removeDeadPieces();
 
   //Counts points that black and white players gain  
 
   this.visitedPieces = {};
   this.thisColor = 0;
 } 
+
+//Remove dead enemy pieces. Helper function for addPiece()
+GoGameModel.prototype.removeDeadPieces = function() {
+  for(key in this.piecesToRemove) {
+    //Parses row and column
+    var toRemove = this.piecesToRemove[key];
+    console.log('removing at ' + JSON.stringify(toRemove));
+
+    //Checks color and awards points
+    (this.board[toRemove[0]][toRemove[1]] === 1) ? this.whitePoints++ : this.blackPoints++;
+    
+    //Removes piece
+    this.board[toRemove[0]][toRemove[1]] = 0;
+  }
+  
+  //Resets piecesToRemove and visitedPieces
+  this.piecesToRemove = {};
+}
 
 //Returns adjacentSpots tuples
 GoGameModel.prototype.adjacentSpots = function(rowColumn) {
@@ -210,7 +221,7 @@ GoGameModel.prototype.checkPiece = function(rowColumn) {
   //Prevents redundant searches
   if(this.isVisited(rowColumn)) return;
 
-  var enemyColor = (this.thisColor === 1) ? 2 : 1;
+  var enemyColor = (this.checkColor === 1) ? 2 : 1;
 
   //Makes queue of points to test
   var testQueue = [rowColumn];
@@ -225,28 +236,28 @@ GoGameModel.prototype.checkPiece = function(rowColumn) {
   while(testQueue.length > 0) {
     var shift = testQueue.shift();
     console.log('testing ' + JSON.stringify(shift));
-    var currentAdjacents = this.adjacentSpots(shift);
+    var checkAdjacents = this.adjacentSpots(shift);
 
-    for(var j = 0; j < currentAdjacents.length; j++) {
-      if(this.isVisited(currentAdjacents[j])) {
+    for(var j = 0; j < checkAdjacents.length; j++) {
+      if(this.isVisited(checkAdjacents[j])) {
         continue;
       }
 
       //If this group has an opening, set isAlive to true
-      if(this.board[currentAdjacents[j][0]][currentAdjacents[j][1]] === 0) {
+      if(this.board[checkAdjacents[j][0]][checkAdjacents[j][1]] === 0) {
         isAlive = true;
         continue;
       }
 
       //If this piece (the one being visited) is the same color, add it to queue and group, and mark as visited
-      if(this.board[currentAdjacents[j][0]][currentAdjacents[j][1]] === this.thisColor) {
-        this.visitedPieces[this.stringify(currentAdjacents[j])] = currentAdjacents[j];
-        testQueue.push(currentAdjacents[j]);
-        thisGroup.push(currentAdjacents[j]);
+      if(this.board[checkAdjacents[j][0]][checkAdjacents[j][1]] === this.checkColor) {
+        this.visitedPieces[this.stringify(checkAdjacents[j])] = checkAdjacents[j];
+        testQueue.push(checkAdjacents[j]);
+        thisGroup.push(checkAdjacents[j]);
         continue;
       }
 
-      if(this.board[currentAdjacents[j][0]][currentAdjacents[j][1]] === enemyColor) {
+      if(this.board[checkAdjacents[j][0]][checkAdjacents[j][1]] === enemyColor) {
         continue;
       }
       
@@ -287,10 +298,25 @@ GoGameModel.prototype.printBoard = function(row) {
 }
 
 //Creates new GoGameModel
-var gfw = new GoGameModel(19);
+var gfw = new GoGameModel(9);
+
+// GoGameModel.prototype.testPrint = function() {
+//   for(var i =0; i < this.size+1; i++) {
+//     console.log(this.printBoard(i));
+//   }
+// }
+
+
+
+
+
+
 
 //Turns on server
 server.listen(port, function() {
   console.log('%s listening at %s', server.name, server.url);
+  // gfw.addPiece(0,0,1);
+  // gfw.addPiece(0,1,2);
+  // gfw.addPiece(1,0,2);
   console.log(gfw.printBoard(0));
 });
