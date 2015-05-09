@@ -36,7 +36,7 @@ server.post('/', function(req, res, next) {
       !request[1].match(/[a-s]/) || !request[2].match(/[1-9]/) || !request[3].match(/[abcehikltw]/)) {
       if(request[1] === 'help') {
       res.send(201, {'text':'I can make a Go board for you and play your stones on it.'+
-        '\nTo create a new board type "go new board 19."' +
+        '\nTo create a new board type "go new board [size]." Size can be ' +
         '\nMake plays by typing in this format: "go e 15 black", or "go e 15 b". '+
         '\nI cannot count your points at the end of the game for you yet.'+
         '\nI will not enforce the コウ rule (you cannot make the same move twice).'});
@@ -155,8 +155,9 @@ GoGameModel.prototype.addPiece = function(row, column, color) {
 
   //Checks friendly pieces
   for(var i = 0; i < originAdjacent.length; i++) {
+    debugger;
     if(adjColorArray[i] === color) {
-      this.thisColor = adjColorArray[i];
+      this.checkColor = adjColorArray[i];
       this.checkPiece(originAdjacent[i]);
     }
   }  
@@ -167,7 +168,7 @@ GoGameModel.prototype.addPiece = function(row, column, color) {
   //Counts points that black and white players gain  
 
   this.visitedPieces = {};
-  this.thisColor = 0;
+  this.checkColor = 0;
 } 
 
 //Remove dead enemy pieces. Helper function for addPiece()
@@ -300,11 +301,11 @@ GoGameModel.prototype.printBoard = function(row) {
 //Creates new GoGameModel
 var gfw = new GoGameModel(9);
 
-// GoGameModel.prototype.testPrint = function() {
-//   for(var i =0; i < this.size+1; i++) {
-//     console.log(this.printBoard(i));
-//   }
-// }
+GoGameModel.prototype.testPrint = function() {
+  for(var i =0; i < this.size+1; i++) {
+    console.log(this.printBoard(i));
+  }
+}
 
 
 
@@ -315,8 +316,8 @@ var gfw = new GoGameModel(9);
 //Turns on server
 server.listen(port, function() {
   console.log('%s listening at %s', server.name, server.url);
-  // gfw.addPiece(0,0,1);
-  // gfw.addPiece(0,1,2);
-  // gfw.addPiece(1,0,2);
+  gfw.addPiece(0,1,2);
+  gfw.addPiece(1,0,2);
+  gfw.addPiece(0,0,1);
   console.log(gfw.printBoard(0));
 });
