@@ -38,8 +38,7 @@ server.post('/', function(req, res, next) {
       res.send(201, {'text':'I can make a Go board for you and play your stones on it.'+
         '\nTo create a new board type "go new board [size]." Size can be ' +
         '\nMake plays by typing in this format: "go e 15 black", or "go e 15 b". '+
-        '\nI cannot count your points at the end of the game for you yet.'+
-        '\nI will not enforce the コウ rule (you cannot make the same move twice).'});
+        '\nI cannot count your points at the end of the game for you yet.'});
     }
     return;
   }
@@ -58,6 +57,8 @@ server.post('/', function(req, res, next) {
   //Prevent players from making the same move twice in a row
   if(([column, row] === lastBlackMove && play === 1 )||([column, row] === lastWhiteMove && play === 2)) {
     res.send(201, {'text':'It is against the rule of Kou (コウ) for a player to play the same move two turns in a row.'}); 
+    return;
+  }
   (play === 1) ? lastBlackMove = [column, row] : lastWhiteMove = [column, row];
 
   //Prevents players from playing out of turn
@@ -90,7 +91,7 @@ server.post('/', function(req, res, next) {
 
   printing = true;
   //Sends message confirming move
-  res.send(201, {'text': request[3] + ' plays at ' + request[2] + '-' + request[1].toString() });
+  res.send(201, {'text': request[3] + ' plays at ' + request[2] + '-' + request[1]});
 });
 
 
@@ -99,9 +100,9 @@ server.post('/', function(req, res, next) {
 
 
 //TODO
-//implement kou rule
 //implement passing
 //count points when both players pass and reset the board
+//letters are spaced properly
 
 //mongo
 //make it take an incoming hook url??
@@ -290,6 +291,64 @@ GoGameModel.prototype.checkPiece = function(rowColumn) {
   }
 }
 
+//Counts points for each color at the end of the game
+GoGameModel.prototype.countPoints = function() {
+  var emptySquares = {};
+
+  for(var i = 0; i < this.size+1; i++) {
+    for(var j = 0; j < this.size+1; j++) {
+      if(this.board[i][j] === 0) {
+        var stringified = this.stringify([i, j]);
+        emptySquares[stringified] = stringified;
+      }
+    }
+  }
+
+
+}
+
+//Helper function for countPoints()
+GoGameModel.prototype.findEmptySquareGroup = function(row, column) {
+  var thisGroup = {};
+  var thereIsABlackAdjacent = false;
+  var thereIsAWhiteAdjacent = false;
+
+  var recurse = function(row, column) {
+    if(thereIsAWhiteAdjacent && thereIsABlackAdjacent) return;
+
+    var key = this.stringify([row, column]);
+    if(thisGroup[key]) return;
+
+    thisGroup[key] = [row, column];
+    
+    var adjSpots = this.adjacentSpots([row, column]);
+
+    for(var i = 0; i < adjSpots.length; i++) {
+      if(this.board[adjSpots[i][0]][adjSpots[i][1]] === 1) {
+        thereIsABlackAdjacent = true;
+      } else if(this.board[adjSpots[i][0]][adjSpots[i][1]] === 2) {
+        thereIsAWhiteAdjacent = true;
+      } else if(this.board[adjSpots[i][0]][adjSpots[i][1]] === 0) {
+        recurse(adjSpots[i][0], adjSpots[i][1]);
+      }
+    }
+  }
+
+  recurse.call(this, row, column);
+
+  var thisGroupArray = Object.keys(thisGroup);
+
+  return [thereIsABlackAdjacent, thereIsAWhiteAdjacent, thisGroupArray];
+}
+
+
+
+
+
+
+
+
+
   ////////////////////////////
   // Board printing method. //
   ////////////////////////////
@@ -306,7 +365,8 @@ GoGameModel.prototype.printBoard = function(row) {
   result += "`" + String.fromCharCode('0'.charCodeAt(0) + 17 + row) + "`"; //places letters at the end of rows
 
   if(row === this.size) { 
-    // result += ' \n` 1  2  3  4  5  6  7  8  9  10 11 12 13 14 15 16 17 18 19`';
+    numberText = ' \n`1   2   3   4   5   6   7  8   9  10  11  12  13  14  15  16  17  18  19`';
+    result += numberText.slice(0, numberText.indexOf(this.size+1));
     result += '\nBlack: ' + this.blackPoints + " capture points"
     result += '\nWhite: ' + this.whitePoints + " capture points";
   }
@@ -314,7 +374,7 @@ GoGameModel.prototype.printBoard = function(row) {
 }
 
 //Creates new GoGameModel
-var gfw = new GoGameModel(9);
+var gfw = new GoGameModel(19);
 
 GoGameModel.prototype.testPrint = function() {
   for(var i =0; i < this.size+1; i++) {
@@ -322,43 +382,13 @@ GoGameModel.prototype.testPrint = function() {
   }
 }
 
-//Counts points for each color at the end of the game
-GoGameModel.prototype.countPoints = function() {
-  var emptySquares = {};
-
-  for(var i = 0; i < this.size+1; i++) {
-    for(var j = 0; j < this.size+1; j++) {
-      if(this.board[i][j] === 0) {
-        var stringified = this.stringify([i, j]);
-        emptySquares[stringified] = stringified;
-      }
-    }
-  }
-
-  for(key in emptySquares) {
-    if(emptySquares[key] === undefined || emptySquares[key] === null) continue;
-
-
-
-    emptySquares[key] = null;
-  }
-}
-
-//Helper function for countPoints()
-GoGameModel.prototype.findEmptySquareGroup = function(row, column) {
-
-
-}
-
-
-
-
+// server.get('/', function(req, res, next) {
+//   var text = gfw.printBoard(18);
+//   client.post(incomingHookUrl, { 'text': text });
+//   res.send('hi');
+// });
 
 //Turns on server
 server.listen(port, function() {
   console.log('%s listening at %s', server.name, server.url);
-  gfw.addPiece(0,1,2);
-  gfw.addPiece(1,0,2);
-  gfw.addPiece(0,0,1);
-  console.log(gfw.printBoard(0));
 });
