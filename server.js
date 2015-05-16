@@ -110,9 +110,13 @@ server.post('/', function(req, res, next) {
   //Controller method. alters data in the GoGameModel.
   gfw.addPiece(row, column, play);
 
+                //only for testing!!!
+                res.send(201, {'text': request[3] + ' plays at ' + request[2] + '-' + request[1]});
+
   //Row posting method
   var postingRow = 0;
-    var postARow = function() {
+  
+  var postARow = function() {
     client.post(incomingHookUrl, { 'text': gfw.printBoard(postingRow) });
     postingRow++;
   }
@@ -128,7 +132,7 @@ server.post('/', function(req, res, next) {
 
   printing = true;
  
-  //Outcome 8: Play (success)
+  //Final outcome: Play (success)
   //Sends message confirming move
   res.send(201, {'text': request[3] + ' plays at ' + request[2] + '-' + request[1]});
 });
@@ -417,7 +421,7 @@ GoGameModel.prototype.printBoard = function(row) {
 
   if(row === this.size) { 
     numberText = '1   2   3   4   5   6   7  8   9  10  11  12  13  14  15  16  17  18 19  20  21  22';
-    result += '\n`' + numberText.slice(0, numberText.indexOf(this.size+2)) + '`';
+    result += '\n`' + numberText.slice(0, numberText.indexOf(this.size+1)+2) + '`';
     result += '\nBlack: ' + this.blackPoints + " capture points"
     result += '\nWhite: ' + this.whitePoints + " capture points";
   }
@@ -434,9 +438,17 @@ var gfw = new GoGameModel(19);
 
     //for testing
     server.get('/', function(req, res, next) {
-      var text = gfw.printBoard(18);
-      client.post(incomingHookUrl, { 'text': text });
-      res.send('hi');
+      var postingRow = 0;
+      
+      var postARow = function() {
+        client.post(incomingHookUrl, { 'text': gfw.printBoard(postingRow) });
+        postingRow++;
+      }
+
+      setTimeout(postARow, 1100*(1));
+      setTimeout(postARow, 1100*(2));
+
+      res.send(201, {'text': 'we played there'});
     });
 
     GoGameModel.prototype.testPrint = function() {
