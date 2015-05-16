@@ -18,17 +18,49 @@ var port = process.env.PORT || 1337;
 var printing = false;
 
 server.post('/', function(req, res, next) {
+
+  //Outcome 1: Interrupted
   //prevents new input from being added before the board has finished printing
-  if(printing) return;
+  if(printing) res.send(201, {'text': "Please don't interrupt me" });
 
   //Establishes request variable with the text of the message which made the move
   var request = req.params.text.toLowerCase().split(' ');
   
+  //Outcome 2: Make a new board
   //Command to create a new board
   if(request[1] === "new" && request[2] === "board" && parseInt(request[3]) < 22 && parseInt(request[3]) > 0) {
     gfw = new GoGameModel(parseInt(request[3]));
       res.send(201, {'text':'Made a new board of size ' + parseInt(request[3])});
     return;
+  }
+
+  //Outcome 3: End game
+  //Counts up points in the game, announces winner, and makes a new board
+  if(request === ['go','finish']) {
+    gfw.countPoints();
+    var message = "Black wins!"
+    if(gfw.blackPoints === gfw.whitePoints) {
+      message = "Tie game!";
+    } else if (gfw.whitePoints > gfw.blackPoints) {
+      message = "White wins!";
+    }
+    message += "\nBlack points: " + gfw.blackPoints + "\nWhite points: " + gfw.whitePoints;
+
+    gfw = new GoGameModel(19);
+
+    res.send(201, {text: message});
+  }
+
+  //Outcome 4: Pass
+  //switches whose turn it is, and sets the last move of the passing player to null
+  if(request === ['go', 'pass']) {
+    if(this.lastMove === 1) {
+      this.lastMove = 2;
+      this.lastBlackMove = [null, null];
+    } else {
+      this.lastMove = 1;
+      this.lastWhiteMove = [null, null];
+    }
   }
   
   //Sanitizes input
@@ -36,12 +68,15 @@ server.post('/', function(req, res, next) {
       !request[1].match(/[a-s]/) || !request[2].match(/[1-9]/) || !request[3].match(/[abcehikltw]/)) {
       if(request[1] === 'help') {
       res.send(201, {'text':'I can make a Go board for you and play your stones on it.'+
-        '\nTo create a new board type "go new board [size]." Size can be ' +
+        '\nTo create a new board type "go new board [size]." Size can range from 1 to 21.' +
         '\nMake plays by typing in this format: "go e 15 black", or "go e 15 b". '+
-        '\nI cannot count your points at the end of the game for you yet.'});
+        '\nTo finish the game, type "go finish".'+
+        '\nTo pass your turn, type "go pass".'});
     }
     return;
   }
+
+  //Outcome 5: Joke requests
   if(request === ["go","fuck","yourself"] || request === ["go","suck","a","dick"]) {
     res.send(201, {'text': "Right back at you." });
   }
@@ -54,6 +89,7 @@ server.post('/', function(req, res, next) {
   var play = 1;
   if(request[3] === "white" || request[3] === "w") play = 2;
 
+  //Outcome 6: Play (kou error)
   //Prevent players from making the same move twice in a row
   if(([column, row] === lastBlackMove && play === 1 )||([column, row] === lastWhiteMove && play === 2)) {
     res.send(201, {'text':'It is against the rule of Kou (コウ) for a player to play the same move two turns in a row.'}); 
@@ -61,6 +97,7 @@ server.post('/', function(req, res, next) {
   }
   (play === 1) ? lastBlackMove = [column, row] : lastWhiteMove = [column, row];
 
+  //Outcome 7: Play (out of turn error)
   //Prevents players from playing out of turn
   if(this.lastMove === play) {
     res.send(201, {'text':'It\'s not '+request[3]+'\'s turn to play.'});
@@ -90,22 +127,16 @@ server.post('/', function(req, res, next) {
   setTimeout(finishPrinting, 1100*(gfw.size+3));
 
   printing = true;
+ 
+  //Outcome 8: Play (success)
   //Sends message confirming move
   res.send(201, {'text': request[3] + ' plays at ' + request[2] + '-' + request[1]});
 });
 
-
-
-
-
-
 //TODO
-//implement passing
-//count points when both players pass and reset the board
-//letters are spaced properly
-
 //mongo
-//make it take an incoming hook url??
+//make it modular / take an incoming hook url to initialize the application, so it's possible
+  //to run it after dling from github
 
 
 
@@ -171,7 +202,6 @@ GoGameModel.prototype.addPiece = function(row, column, color) {
 
   //Checks friendly pieces
   for(var i = 0; i < originAdjacent.length; i++) {
-    debugger;
     if(adjColorArray[i] === color) {
       this.checkColor = adjColorArray[i];
       this.checkPiece(originAdjacent[i]);
@@ -283,7 +313,7 @@ GoGameModel.prototype.checkPiece = function(rowColumn) {
     }
   }
   
-
+  //If this group is dead, add the pieces to piecestoremove object in board closure
   if(!isAlive) {
     for(var i = 0; i < thisGroup.length; i++) {
       this.piecesToRemove[this.stringify(thisGroup[i])] = thisGroup[i];
@@ -304,7 +334,29 @@ GoGameModel.prototype.countPoints = function() {
     }
   }
 
+  //runs once and breaks, then does it again in while loop if there are more keys
+  while(Object.keys(emptySquares).length > 1) {
+    for(key in emptySquares) {
+      
+      var rowColumn = emptySquares[key].split('-');
+      
+      var emptySquaresInfo = this.findEmptySquareGroup(rowColumn[0], rowColumn[1]);
 
+      var pointsGoTo = 0;
+      if(emptySquaresInfo[0] === false && emptySquaresInfo[1] === false) throw 'This group didn\'t touch anything';
+      else if(emptySquaresInfo[0] && !emptySquaresInfo[1]) pointsGoTo = 1;
+      else if(!emptySquaresInfo[0] && emptySquaresInfo[1]) pointsGoTo = 2;
+      
+      if(pointsGoTo === 1) this.blackPoints += emptySquaresInfo[2].length;
+      else if(pointsGoTo === 2) this.whitePoints += emptySquaresInfo[2].length;
+
+      for(var i = 0; i < emptySquaresInfo[2].length; i++) {
+        delete emptySquares[emptySquaresInfo[2][i]];
+      }
+
+      break;
+    }
+  }
 }
 
 //Helper function for countPoints()
@@ -348,7 +400,6 @@ GoGameModel.prototype.findEmptySquareGroup = function(row, column) {
 
 
 
-
   ////////////////////////////
   // Board printing method. //
   ////////////////////////////
@@ -365,8 +416,8 @@ GoGameModel.prototype.printBoard = function(row) {
   result += "`" + String.fromCharCode('0'.charCodeAt(0) + 17 + row) + "`"; //places letters at the end of rows
 
   if(row === this.size) { 
-    numberText = ' \n`1   2   3   4   5   6   7  8   9  10  11  12  13  14  15  16  17  18  19`';
-    result += numberText.slice(0, numberText.indexOf(this.size+1));
+    numberText = '1   2   3   4   5   6   7  8   9  10  11  12  13  14  15  16  17  18 19  20  21  22';
+    result += '\n`' + numberText.slice(0, numberText.indexOf(this.size+2)) + '`';
     result += '\nBlack: ' + this.blackPoints + " capture points"
     result += '\nWhite: ' + this.whitePoints + " capture points";
   }
@@ -376,17 +427,24 @@ GoGameModel.prototype.printBoard = function(row) {
 //Creates new GoGameModel
 var gfw = new GoGameModel(19);
 
-GoGameModel.prototype.testPrint = function() {
-  for(var i =0; i < this.size+1; i++) {
-    console.log(this.printBoard(i));
-  }
-}
 
-// server.get('/', function(req, res, next) {
-//   var text = gfw.printBoard(18);
-//   client.post(incomingHookUrl, { 'text': text });
-//   res.send('hi');
-// });
+
+
+
+
+    //for testing
+    server.get('/', function(req, res, next) {
+      var text = gfw.printBoard(18);
+      client.post(incomingHookUrl, { 'text': text });
+      res.send('hi');
+    });
+
+    GoGameModel.prototype.testPrint = function() {
+      for(var i =0; i < this.size+1; i++) {
+        console.log(this.printBoard(i));
+      }
+    }
+
 
 //Turns on server
 server.listen(port, function() {
