@@ -448,9 +448,9 @@ GoGameModel.prototype.printBoard = function(row) {
     result += '\n`' + numberText.slice(0, numberText.indexOf(this.size+1)+2) + '`';
     result += '\nBlack: ' + this.blackPoints + " capture points"
     result += ' | White: ' + this.whitePoints + " capture points ";
+    whoseTurn = this.lastMove === 1 ? 'white' : 'black';
+    result += "| It is " + whoseTurn + "'s turn."
   }
-   whoseTurn = this.lastMove === 1 ? 'white' : 'black';
-   result += "| It is " + whoseTurn + "'s turn."
   return result;
 }
 
@@ -465,8 +465,9 @@ GoGameModel.prototype.printBoard = function(row) {
   // Initial server setup   //
   ////////////////////////////
 
-//Creates new GoGameModel
-var ggm = new GoGameModel(19);
+                //Creates new GoGameModel
+                  //size 5 for testing
+                var ggm = new GoGameModel(5);
 
 //Turns on server
 server.listen(port, function() {
