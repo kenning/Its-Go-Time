@@ -113,8 +113,8 @@ server.post('/', function(req, res, next) {
   }
 
   //Prevents players from playing outside of the board
-  if(row > gfw.size) row = gfw.size;
-  if(column > gfw.size) column = gfw.size;
+  if(row > ggm.size) row = ggm.size;
+  if(column > ggm.size) column = ggm.size;
 
   //Outcome 8: Play (kou error)
   //Prevent players from making the same move twice in a row
