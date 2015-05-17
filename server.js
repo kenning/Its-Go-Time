@@ -10,9 +10,14 @@ var port = process.env.PORT || 1337;
 
 
 
+
+
+
+
+
   /////////////////////////////////////////////
   // Post request. Handles all netcode       //
-  // except for the board printing function. //
+  // except for the board printing function  //
   /////////////////////////////////////////////
 
 var printing = false;
@@ -21,7 +26,9 @@ server.post('/', function(req, res, next) {
 
   //Outcome 1: Interrupted
   //prevents new input from being added before the board has finished printing
-  if(printing) res.send(201, {'text': "Please don't interrupt me" });
+  if(printing) {
+    return;
+  }
 
   //Establishes request variable with the text of the message which made the move
   var request = req.params.text.toLowerCase().split(' ');
@@ -29,24 +36,27 @@ server.post('/', function(req, res, next) {
   //Outcome 2: Make a new board
   //Command to create a new board
   if(request[1] === "new" && request[2] === "board" && parseInt(request[3]) < 22 && parseInt(request[3]) > 0) {
-    gfw = new GoGameModel(parseInt(request[3]));
-      res.send(201, {'text':'Made a new board of size ' + parseInt(request[3])});
+    ggm = new GoGameModel(parseInt(request[3]));
+    ggm.lastMove = 2;
+
+    res.send(201, {'text':'Made a new board of size ' + parseInt(request[3])});
     return;
   }
 
   //Outcome 3: End game
   //Counts up points in the game, announces winner, and makes a new board
   if(request === ['go','finish']) {
-    gfw.countPoints();
+    ggm.countPoints();
     var message = "Black wins!"
-    if(gfw.blackPoints === gfw.whitePoints) {
+    if(ggm.blackPoints === ggm.whitePoints) {
       message = "Tie game!";
-    } else if (gfw.whitePoints > gfw.blackPoints) {
+    } else if (ggm.whitePoints > ggm.blackPoints) {
       message = "White wins!";
     }
-    message += "\nBlack points: " + gfw.blackPoints + "\nWhite points: " + gfw.whitePoints;
+    message += "\nBlack points: " + ggm.blackPoints + "\nWhite points: " + ggm.whitePoints;
 
-    gfw = new GoGameModel(19);
+    ggm = new GoGameModel(19);
+    ggm.lastMove = 2;
 
     res.send(201, {text: message});
   }
@@ -61,23 +71,30 @@ server.post('/', function(req, res, next) {
       this.lastMove = 1;
       this.lastWhiteMove = [null, null];
     }
-  }
-  
-  //Sanitizes input
-  if( request[1].length !== 1 ||  request[2].length > 2 ||  (request[3].length !== 5 && request[3].length !== 1) ||
-      !request[1].match(/[a-s]/) || !request[2].match(/[1-9]/) || !request[3].match(/[abcehikltw]/)) {
-      if(request[1] === 'help') {
-      res.send(201, {'text':'I can make a Go board for you and play your stones on it.'+
-        '\nTo create a new board type "go new board [size]." Size can range from 1 to 21.' +
-        '\nMake plays by typing in this format: "go e 15 black", or "go e 15 b". '+
-        '\nTo finish the game, type "go finish".'+
-        '\nTo pass your turn, type "go pass".'});
-    }
-    return;
+    var whoPassed = this.lastMove === 1 ? 'white' : 'black';
+    res.send(201, {text: whoPassed + ' passed their turn.'})
   }
 
-  //Outcome 5: Joke requests
-  if(request === ["go","fuck","yourself"] || request === ["go","suck","a","dick"]) {
+  //Outcome 5: Help
+  if(request === ['go','help']) {
+    res.send(201, {'text':'I can make a Go board for you a friend to play on.'+
+    '\nTo create a new board type "go new board [size]." Size can range from 1 to 21.' +
+    '\nMake plays by typing in this format: "go e 15 [black | white]", or "go e 15 [b | w]". '+
+    '\nTo display the board without making a move, type "go display".'+
+    '\nTo skip your turn, type "go pass".'+
+    '\nTo finish the game, type "go finish". I will count up the points for you.'});
+  }
+  
+  //Outcome 6: Catches incorrect commands
+  if( request[1].length !== 1 ||  request[2].length > 2 ||  (request[3].length !== 5 && request[3].length !== 1) ||
+      !request[1].match(/[a-s]/) || !request[2].match(/[1-9]/) || !request[3].match(/[abcehikltw]/)) {
+    res.send(201, {'text': "I didn't understand that. For help type \"go help\"." });
+  }
+
+  //Outcome 7: Joke requests
+  if(request === ["go","take","a","hike"] || request === ["go","jump","off","a","bridge"] || 
+     request === ["go","to","hell"] || request === ["go","away"] || request === ["go","fuck","yourself"] || 
+     request === ["go","suck","a","dick"]) {
     res.send(201, {'text': "Right back at you." });
   }
 
@@ -86,10 +103,20 @@ server.post('/', function(req, res, next) {
   var row = request[1].charCodeAt(0) - 97;
   if(row < 0) row += 32;
   var column = request[2] - 1;
-  var play = 1;
-  if(request[3] === "white" || request[3] === "w") play = 2;
 
-  //Outcome 6: Play (kou error)
+  var play = 1;
+  if(request[3] === "black" || request[3] === "b") {
+    request[3] = "black";
+  } else if(request[3] === "white" || request[3] === "w") {
+    request[3] = "white";
+    play = 2;
+  }
+
+  //Prevents players from playing outside of the board
+  if(row > gfw.size) row = gfw.size;
+  if(column > gfw.size) column = gfw.size;
+
+  //Outcome 8: Play (kou error)
   //Prevent players from making the same move twice in a row
   if(([column, row] === this.lastBlackMove && play === 1 )||([column, row] === this.lastWhiteMove && play === 2)) {
     res.send(201, {'text':'It is against the rule of Kou (コウ) for a player to play the same move two turns in a row.'}); 
@@ -97,7 +124,7 @@ server.post('/', function(req, res, next) {
   }
   (play === 1) ? this.lastBlackMove = [column, row] : this.lastWhiteMove = [column, row];
 
-  //Outcome 7: Play (out of turn error)
+  //Outcome 9: Play (out of turn error)
   //Prevents players from playing out of turn
   if(this.lastMove === play) {
     res.send(201, {'text':'It\'s not '+request[3]+'\'s turn to play.'});
@@ -108,27 +135,24 @@ server.post('/', function(req, res, next) {
   this.lastMove = play;
 
   //Controller method. alters data in the GoGameModel.
-  gfw.addPiece(row, column, play);
-
-                //only for testing!!!
-                res.send(201, {'text': request[3] + ' plays at ' + request[2] + '-' + request[1]});
+  ggm.addPiece(row, column, play);
 
   //Row posting method
   var postingRow = 0;
   
   var postARow = function() {
-    client.post(incomingHookUrl, { 'text': gfw.printBoard(postingRow) });
+    client.post(incomingHookUrl, { 'text': ggm.printBoard(postingRow) });
     postingRow++;
   }
 
   //Posts all rows 1.1 second apart from each other
-  for(var i = 0; i < gfw.size+1; i++) {
+  for(var i = 0; i < ggm.size+1; i++) {
     setTimeout(postARow, 1100*(i+1));
   }
 
   //Avoids new plays being made during printing
   var finishPrinting = function() {printing = false;}
-  setTimeout(finishPrinting, 1100*(gfw.size+3));
+  setTimeout(finishPrinting, 1100*(ggm.size+3));
 
   printing = true;
  
@@ -137,10 +161,10 @@ server.post('/', function(req, res, next) {
   res.send(201, {'text': request[3] + ' plays at ' + request[2] + '-' + request[1]});
 });
 
-//TODO
-//mongo
-//make it modular / take an incoming hook url to initialize the application, so it's possible
-  //to run it after dling from github
+  //TODO
+  //make it modular / take an incoming hook url to initialize the application, so it's possible
+    //to run it after dling from github
+
 
 
 
@@ -149,7 +173,7 @@ server.post('/', function(req, res, next) {
 
 
   ////////////////////////////////////////////
-  // Go Game Model. Handles all game logic. //
+  // Go Game Model: Handles all game logic  //
   ////////////////////////////////////////////
 
 var GoGameModel = function(size) {
@@ -309,6 +333,7 @@ GoGameModel.prototype.checkPiece = function(rowColumn) {
         continue;
       }
       
+      //The function should not get here, because all possible moves have continue statements
       throw 'Big error in recursion!';
     }
   }
@@ -334,7 +359,7 @@ GoGameModel.prototype.countPoints = function() {
     }
   }
 
-  //runs once and breaks, then does it again in while loop if there are more keys
+  //runs for loop once and breaks, and continues to run the loop once while there are more empty squares
   while(Object.keys(emptySquares).length > 1) {
     for(key in emptySquares) {
       
@@ -343,7 +368,10 @@ GoGameModel.prototype.countPoints = function() {
       var emptySquaresInfo = this.findEmptySquareGroup(rowColumn[0], rowColumn[1]);
 
       var pointsGoTo = 0;
-      if(emptySquaresInfo[0] === false && emptySquaresInfo[1] === false) throw 'This group didn\'t touch anything';
+      if(emptySquaresInfo[0] === false && emptySquaresInfo[1] === false) {
+        //this should not be possible unless on an empty board
+        throw 'This group didn\'t touch anything';
+      }
       else if(emptySquaresInfo[0] && !emptySquaresInfo[1]) pointsGoTo = 1;
       else if(!emptySquaresInfo[0] && emptySquaresInfo[1]) pointsGoTo = 2;
       
@@ -401,7 +429,7 @@ GoGameModel.prototype.findEmptySquareGroup = function(row, column) {
 
 
   ////////////////////////////
-  // Board printing method. //
+  // Board printing method  //
   ////////////////////////////
 
 GoGameModel.prototype.printBoard = function(row) {
@@ -419,39 +447,26 @@ GoGameModel.prototype.printBoard = function(row) {
     numberText = '1   2   3   4   5   6   7  8   9  10  11  12  13  14  15  16  17  18 19  20  21  22';
     result += '\n`' + numberText.slice(0, numberText.indexOf(this.size+1)+2) + '`';
     result += '\nBlack: ' + this.blackPoints + " capture points"
-    result += '\nWhite: ' + this.whitePoints + " capture points";
+    result += ' | White: ' + this.whitePoints + " capture points ";
   }
+   whoseTurn = this.lastMove === 1 ? 'white' : 'black';
+   result += "| It is " + whoseTurn + "'s turn."
   return result;
 }
 
+
+
+
+
+
+
+
+  ////////////////////////////
+  // Initial server setup   //
+  ////////////////////////////
+
 //Creates new GoGameModel
-var gfw = new GoGameModel(19);
-
-
-
-
-
-
-    //for testing
-    server.get('/', function(req, res, next) {
-      var postingRow = 0;
-      
-      var postARow = function() {
-        client.post(incomingHookUrl, { 'text': gfw.printBoard(postingRow) });
-        postingRow++;
-      }
-
-      setTimeout(postARow, 1100*(1));
-      setTimeout(postARow, 1100*(2));
-
-      res.send(201, {'text': 'we played there'});
-    });
-
-    GoGameModel.prototype.testPrint = function() {
-      for(var i =0; i < this.size+1; i++) {
-        console.log(this.printBoard(i));
-      }
-    }
+var ggm = new GoGameModel(19);
 
 //Turns on server
 server.listen(port, function() {
