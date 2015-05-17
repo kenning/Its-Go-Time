@@ -91,11 +91,11 @@ server.post('/', function(req, res, next) {
 
   //Outcome 6: Play (kou error)
   //Prevent players from making the same move twice in a row
-  if(([column, row] === lastBlackMove && play === 1 )||([column, row] === lastWhiteMove && play === 2)) {
+  if(([column, row] === this.lastBlackMove && play === 1 )||([column, row] === this.lastWhiteMove && play === 2)) {
     res.send(201, {'text':'It is against the rule of Kou (コウ) for a player to play the same move two turns in a row.'}); 
     return;
   }
-  (play === 1) ? lastBlackMove = [column, row] : lastWhiteMove = [column, row];
+  (play === 1) ? this.lastBlackMove = [column, row] : this.lastWhiteMove = [column, row];
 
   //Outcome 7: Play (out of turn error)
   //Prevents players from playing out of turn
@@ -154,7 +154,6 @@ server.post('/', function(req, res, next) {
 
 var GoGameModel = function(size) {
   this.size = size-1 || 18;
-  console.log(size);
   this.piecesToRemove = {};
   this.visitedPieces = {};
   this.checkColor = 0;
@@ -226,7 +225,6 @@ GoGameModel.prototype.removeDeadPieces = function() {
   for(key in this.piecesToRemove) {
     //Parses row and column
     var toRemove = this.piecesToRemove[key];
-    console.log('removing at ' + JSON.stringify(toRemove));
 
     //Checks color and awards points
     (this.board[toRemove[0]][toRemove[1]] === 1) ? this.whitePoints++ : this.blackPoints++;
@@ -286,7 +284,6 @@ GoGameModel.prototype.checkPiece = function(rowColumn) {
   // Checks all for empty neighbors + same colored neighbors
   while(testQueue.length > 0) {
     var shift = testQueue.shift();
-    console.log('testing ' + JSON.stringify(shift));
     var checkAdjacents = this.adjacentSpots(shift);
 
     for(var j = 0; j < checkAdjacents.length; j++) {
@@ -312,7 +309,6 @@ GoGameModel.prototype.checkPiece = function(rowColumn) {
         continue;
       }
       
-      console.log('Big error!');
       throw 'Big error in recursion!';
     }
   }
@@ -456,7 +452,6 @@ var gfw = new GoGameModel(19);
         console.log(this.printBoard(i));
       }
     }
-
 
 //Turns on server
 server.listen(port, function() {
