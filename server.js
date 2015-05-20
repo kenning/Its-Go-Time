@@ -24,7 +24,7 @@ var printing = false;
 
 server.post('/', function(req, res, next) {
 
-  //Outcome 1: Interrupted
+  //Command 1: Interrupted
   //prevents new input from being added before the board has finished printing
   if(printing) {
     return;
@@ -33,7 +33,7 @@ server.post('/', function(req, res, next) {
   //Establishes request variable with the text of the message which made the move
   var request = req.params.text.toLowerCase().split(' ');
   
-  //Outcome 2: Make a new board
+  //Command 2: Make a new board
   //Command to create a new board
   if(request[1] === "new" && request[2] === "board" && parseInt(request[3]) < 22 && parseInt(request[3]) > 0) {
     ggm = new GoGameModel(parseInt(request[3]));
@@ -43,7 +43,7 @@ server.post('/', function(req, res, next) {
     return;
   }
 
-  //Outcome 3: End game
+  //Command 3: End game
   //Counts up points in the game, announces winner, and makes a new board
   if(request === ['go','finish']) {
     ggm.countPoints();
@@ -61,21 +61,21 @@ server.post('/', function(req, res, next) {
     res.send(201, {text: message});
   }
 
-  //Outcome 4: Pass
+  //Command 4: Pass
   //switches whose turn it is, and sets the last move of the passing player to null
   if(request === ['go', 'pass']) {
     if(this.lastMove === 1) {
       this.lastMove = 2;
-      this.lastBlackMove = [null, null];
+      ggm.lastBlackMove = [null, null];
     } else {
       this.lastMove = 1;
-      this.lastWhiteMove = [null, null];
+      ggm.lastWhiteMove = [null, null];
     }
     var whoPassed = this.lastMove === 1 ? 'white' : 'black';
     res.send(201, {text: whoPassed + ' passed their turn.'})
   }
 
-  //Outcome 5: Help
+  //Command 5: Help
   if(request === ['go','help']) {
     res.send(201, {'text':'I can make a Go board for you a friend to play on.'+
     '\nTo create a new board type "go new board [size]." Size can range from 1 to 21.' +
@@ -85,17 +85,17 @@ server.post('/', function(req, res, next) {
     '\nTo finish the game, type "go finish". I will count up the points for you.'});
   }
   
-  //Outcome 6: Catches incorrect commands
-  if( request[1].length !== 1 ||  request[2].length > 2 ||  (request[3].length !== 5 && request[3].length !== 1) ||
-      !request[1].match(/[a-s]/) || !request[2].match(/[1-9]/) || !request[3].match(/[abcehikltw]/)) {
-    res.send(201, {'text': "I didn't understand that. For help type \"go help\"." });
-  }
-
-  //Outcome 7: Joke requests
+  //Command 7: Joke requests
   if(request === ["go","take","a","hike"] || request === ["go","jump","off","a","bridge"] || 
      request === ["go","to","hell"] || request === ["go","away"] || request === ["go","fuck","yourself"] || 
      request === ["go","suck","a","dick"]) {
     res.send(201, {'text': "Right back at you." });
+  }
+
+  //Incorrect input 1: Catches incorrect commands
+  if( request[1].length !== 1 ||  request[2].length > 2 ||  (request[3].length !== 5 && request[3].length !== 1) ||
+      !request[1].match(/[a-s]/) || !request[2].match(/[1-9]/) || !request[3].match(/[abcehikltw]/)) {
+    res.send(201, {'text': "I didn't understand that. For help type \"go help\"." });
   }
 
   //Further sanitizes input, parses letter and stone color as ints. 
@@ -116,28 +116,33 @@ server.post('/', function(req, res, next) {
   if(row > ggm.size) row = ggm.size;
   if(column > ggm.size) column = ggm.size;
 
-  //Outcome 8: Play (kou error)
+  //Incorrect input 2: Play on top of placed stone
+  if(ggm.board[column][row] !== 0) {
+    res.send(201, {'text':'There is already a stone at that spot.'})
+  }
+
+  //Incorrect input 3: Play (kou error)
   //Prevent players from making the same move twice in a row
-  if(([column, row] === this.lastBlackMove && play === 1 )||([column, row] === this.lastWhiteMove && play === 2)) {
+  if(([column, row] === ggm.lastBlackMove && play === 1 )||([column, row] === ggm.lastWhiteMove && play === 2)) {
     res.send(201, {'text':'It is against the rule of Kou (コウ) for a player to play the same move two turns in a row.'}); 
     return;
   }
 
-  //Outcome 9: Play (out of turn error)
+  //Incorrect input 4: Play (out of turn error)
   //Prevents players from playing out of turn
   if(this.lastMove === play) {
     res.send(201, {'text':'It\'s not '+request[3]+'\'s turn to play.'});
     return;
   }
 
-  //The move succeeded
+  //The move succeeded!!!
 
   this.lastMove = play;
 
   if(play === 1){
-    this.lastBlackMove = [column, row]
+    ggm.lastBlackMove = [column, row];
   } else {
-    this.lastWhiteMove = [column, row];
+    ggm.lastWhiteMove = [column, row];
   } 
   console.log(JSON.stringify(column));
   console.log("lbm: " + this.lastBlackMove);
@@ -459,8 +464,8 @@ GoGameModel.prototype.printBoard = function(row) {
     result += ' | White: ' + this.whitePoints + " capture points ";
     whoseTurn = this.lastMove === 1 ? 'white' : 'black';
     result += "| It is " + whoseTurn + "'s turn.";
-    result += "\nLast black move : " + this.lastBlackMove;
-    result += "\nLast white move : " + this.lastWhiteMove;
+    result += "\nLast black move : " + ggm.lastBlackMove;
+    result += "\nLast white move : " + ggm.lastWhiteMove;
   }
   return result;
 }
