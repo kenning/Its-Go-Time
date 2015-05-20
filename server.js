@@ -45,7 +45,7 @@ server.post('/', function(req, res, next) {
 
   //Command 3: End game
   //Counts up points in the game, announces winner, and makes a new board
-  if(request === ['go','finish']) {
+  if(request[1] === ['finish']) {
     ggm.countPoints();
     var message = "Black wins!"
     if(ggm.blackPoints === ggm.whitePoints) {
@@ -63,7 +63,7 @@ server.post('/', function(req, res, next) {
 
   //Command 4: Pass
   //switches whose turn it is, and sets the last move of the passing player to null
-  if(request === ['go', 'pass']) {
+  if(request[1] === ['pass']) {
     if(this.lastMove === 1) {
       this.lastMove = 2;
       ggm.lastBlackMove = [null, null];
@@ -76,7 +76,7 @@ server.post('/', function(req, res, next) {
   }
 
   //Command 5: Help
-  if(request === ['go','help']) {
+  if(request[1] === ['help']) {
     res.send(201, {'text':'I can make a Go board for you a friend to play on.'+
     '\nTo create a new board type "go new board [size]." Size can range from 1 to 21.' +
     '\nMake plays by typing in this format: "go e 15 [black | white]", or "go e 15 [b | w]". '+
@@ -119,6 +119,7 @@ server.post('/', function(req, res, next) {
   //Incorrect input 2: Play on top of placed stone
   if(ggm.board[column][row] !== 0) {
     res.send(201, {'text':'There is already a stone at that spot.'})
+    return;
   }
 
   //Incorrect input 3: Play (kou error)
@@ -213,9 +214,9 @@ var GoGameModel = function(size) {
 
 //Adds a piece to the game board and checks if it creates a capture
 GoGameModel.prototype.addPiece = function(row, column, color) {
-  if(row === undefined || column === undefined || color === undefined) return null;
-  if(this.board[row][column] === 1 || this.board[row][column] === 2) return null;
-  if(color === 0) return null;
+  if(row === undefined || column === undefined || color === undefined) throw 'error!';
+  if(this.board[row][column] === 1 || this.board[row][column] === 2) throw 'error!';
+  if(color === 0) throw 'error!';
 
   //Marks all adjacent pieces 
   var originAdjacent = [[row, column]];
