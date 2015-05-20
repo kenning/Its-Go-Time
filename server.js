@@ -122,7 +122,6 @@ server.post('/', function(req, res, next) {
     res.send(201, {'text':'It is against the rule of Kou (コウ) for a player to play the same move two turns in a row.'}); 
     return;
   }
-  (play === 1) ? this.lastBlackMove = [column, row] : this.lastWhiteMove = [column, row];
 
   //Outcome 9: Play (out of turn error)
   //Prevents players from playing out of turn
@@ -132,7 +131,16 @@ server.post('/', function(req, res, next) {
   }
 
   //The move succeeded
+
   this.lastMove = play;
+
+  if(play === 1){
+    this.lastBlackMove = [column, row]
+  } else {
+    this.lastWhiteMove = [column, row];
+  } 
+  console.log(JSON.stringify(column));
+  console.log("lbm: " + this.lastBlackMove);
 
   //Controller method. alters data in the GoGameModel.
   ggm.addPiece(row, column, play);
@@ -158,6 +166,7 @@ server.post('/', function(req, res, next) {
  
   //Final outcome: Play (success)
   //Sends message confirming move
+                
   res.send(201, {'text': request[3] + ' plays at ' + request[2] + '-' + request[1]});
 });
 
@@ -446,10 +455,12 @@ GoGameModel.prototype.printBoard = function(row) {
   if(row === this.size) { 
     numberText = '1   2   3   4   5   6   7  8   9  10  11  12  13  14  15  16  17  18 19  20  21  22';
     result += '\n`' + numberText.slice(0, numberText.indexOf(this.size+1)+2) + '`';
-    result += '\nBlack: ' + this.blackPoints + " capture points"
+    result += '\nBlack: ' + this.blackPoints + " capture points";
     result += ' | White: ' + this.whitePoints + " capture points ";
     whoseTurn = this.lastMove === 1 ? 'white' : 'black';
-    result += "| It is " + whoseTurn + "'s turn."
+    result += "| It is " + whoseTurn + "'s turn.";
+    result += "\nLast black move : " + this.lastBlackMove;
+    result += "\nLast white move : " + this.lastWhiteMove;
   }
   return result;
 }
@@ -468,6 +479,32 @@ GoGameModel.prototype.printBoard = function(row) {
                 //Creates new GoGameModel
                   //size 5 for testing
                 var ggm = new GoGameModel(5);
+                ggm.crappyTest = 0;
+
+                server.get('/', function(req, res) {
+                  if(ggm.crappyTest === 0) {
+                    ggm.addPiece(0,1,2);
+                  } else if(ggm.crappyTest === 1) {
+                    ggm.addPiece(1,0,2);      
+                  } else if(ggm.crappyTest === 2) {
+                    ggm.addPiece(1,1,1);      
+                  } else if(ggm.crappyTest === 3) {
+                    ggm.addPiece(2,0,1);      
+                  } else if(ggm.crappyTest === 4) {
+                    ggm.addPiece(0,0,1);      
+                  } else if(ggm.crappyTest === 5) {
+                    ggm.addPiece(0,1,2);      
+                  }
+
+                  console.log(ggm.printBoard(0));
+                  console.log(ggm.printBoard(1));
+
+                  ggm.crappyTest++;
+                  
+                  console.log('lbm: ' + JSON.stringify(ggm.lastBlackMove) + ", lwm: " + ggm.lastWhiteMove + ", ct: " +ggm.crappyTest);
+
+                  res.send(201, {'text': 'lbm: ' + ggm.lastBlackMove + ", lwm: " + ggm.lastWhiteMove});
+                })
 
 //Turns on server
 server.listen(port, function() {
